@@ -34,6 +34,7 @@ export function useSpeechSynthesis(): SpeechSynthesisHook {
     
     try {
       const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.8; // Set speech rate to 0.8
       utterance.onstart = () => {
         setIsSpeaking(true);
       };
