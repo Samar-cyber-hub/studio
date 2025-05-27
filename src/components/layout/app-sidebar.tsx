@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -29,7 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/humorous-chat", label: "Humorous Chat", icon: MessageSquareHeart },
+  { href: "/humorous-chat", label: "Fun Chat", icon: MessageSquareHeart },
   { href: "/persistent-memory", label: "Persistent Memory Chat", icon: BrainCircuit },
   { href: "/code-generation", label: "Code Generation", icon: CodeXml },
   { href: "/media-generation", label: "Media Generation", icon: ImageIcon },
