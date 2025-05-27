@@ -30,7 +30,7 @@ export function HumorousChatClient() {
         {
           id: "initial-bot",
           role: "assistant",
-          content: "Namaste! yaar? Kya haal aur! sab badhiya hai ghar mein aur aaj ka din kaisa hai ",
+          content: "Namaste! yaar? Kya haal chaal hai aur! sab badhiya hai ghar mein aur aaj ka din kaisa hai ",
           createdAt: new Date()
         }
       ]}
