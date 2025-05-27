@@ -1,3 +1,4 @@
+
 "use client";
 
 import { ChatInterface } from "@/components/common/chat-interface";
@@ -29,7 +30,7 @@ export function HumorousChatClient() {
         {
           id: "initial-bot",
           role: "assistant",
-          content: "Namaste! Ready for some fun chat, yaar? Kya haal chaal?",
+          content: "Namaste! Ready for some fun chat, yaar? Kya haal aur! sab badhiya hai ghar mwin aur aaj ka din kaisa hai chaal?",
           createdAt: new Date()
         }
       ]}
