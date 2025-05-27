@@ -46,6 +46,12 @@ const humorousChatFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      console.error('humorousChatPrompt returned null or undefined output.');
+      return {
+        response: 'Arre yaar, kuch toh gadbad ho gayi! Thoda fir se try karna. (Oops, something went wrong! Please try again.)',
+      };
+    }
+    return output;
   }
 );

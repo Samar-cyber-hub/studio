@@ -61,6 +61,17 @@ const suggestSocialMediaContentFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+     if (!output) {
+      console.error('socialMediaOptimizationPrompt returned null or undefined output.');
+      return {
+        trendingTopics: [],
+        tags: [],
+        hashtags: [],
+        videoTitles: [],
+        seoDescription: 'Sorry, could not generate suggestions at this time. Please try again.',
+        thumbnailPrompt: 'Error: could not generate thumbnail prompt.',
+      };
+    }
+    return output;
   }
 );

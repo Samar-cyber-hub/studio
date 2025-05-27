@@ -74,6 +74,14 @@ const generateCodeFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await generateCodePrompt(input);
-    return output!;
+    if (!output) {
+      console.error('generateCodePrompt returned null or undefined output.');
+      return {
+        code: '// Sorry, an error occurred while generating code. Please try again.',
+        language: 'plaintext',
+        isErrorFree: false,
+      };
+    }
+    return output;
   }
 );

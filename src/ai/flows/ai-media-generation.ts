@@ -30,14 +30,23 @@ const generateMediaFlow = ai.defineFlow(
   async input => {
     // Currently, only image generation is supported.
     if (input.mediaType === 'image') {
-      const {media} = await ai.generate({
-        model: 'googleai/gemini-2.0-flash-exp',
-        prompt: input.prompt,
-        config: {
-          responseModalities: ['TEXT', 'IMAGE'],
-        },
-      });
-      return {mediaUrl: media.url!};
+      try {
+        const {media} = await ai.generate({
+          model: 'googleai/gemini-2.0-flash-exp',
+          prompt: input.prompt,
+          config: {
+            responseModalities: ['TEXT', 'IMAGE'],
+          },
+        });
+        if (!media?.url) {
+          console.error('AI media generation did not return a valid media URL.');
+          return {mediaUrl: 'Error: Could not generate image. No URL returned.'};
+        }
+        return {mediaUrl: media.url};
+      } catch (e) {
+        console.error('Error during AI media generation:', e);
+        return {mediaUrl: 'Error: Exception during image generation.'};
+      }
     } else {
       // Return a placeholder if the media type is not supported.
       return {mediaUrl: `Unsupported media type: ${input.mediaType}`};
