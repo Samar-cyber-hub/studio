@@ -15,26 +15,92 @@ export function useSpeechSynthesis(): SpeechSynthesisHook {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
+  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       setIsSupported(true);
-      // Cancel any ongoing speech when the component mounts or support is detected
-      window.speechSynthesis.cancel();
+      window.speechSynthesis.cancel(); // Cancel any ongoing speech
     }
   }, []);
+
+  useEffect(() => {
+    if (!isSupported) return;
+
+    const loadAndSetVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length === 0) {
+        return; // Voices not loaded yet
+      }
+      // console.log("Available voices:", voices); // For debugging: to see what voices are available
+
+      let foundVoice: SpeechSynthesisVoice | undefined;
+
+      // Priority 1: 'en-IN'
+      foundVoice = voices.find(voice => voice.lang === 'en-IN');
+
+      // Priority 2: 'hi-IN'
+      if (!foundVoice) {
+        foundVoice = voices.find(voice => voice.lang === 'hi-IN');
+      }
+
+      // Priority 3: Name contains "India" (case-insensitive)
+      if (!foundVoice) {
+        foundVoice = voices.find(voice => voice.name.toLowerCase().includes('india'));
+      }
+      
+      // Priority 4: Name contains "Hindi" (case-insensitive)
+      if (!foundVoice) {
+        foundVoice = voices.find(voice => voice.name.toLowerCase().includes('hindi'));
+      }
+
+      // Priority 5: Specific known voice names
+      if (!foundVoice) {
+        const knownIndianVoiceNames = [
+          "Microsoft Heera - English (India)", // Windows
+          "Google हिन्दी", // Android/Chrome often has this for Hindi
+          "Rishi", // macOS Indian English
+          // Add other known voice names if discovered
+        ];
+        foundVoice = voices.find(voice => knownIndianVoiceNames.includes(voice.name));
+      }
+
+      if (foundVoice) {
+        setSelectedVoice(foundVoice);
+        // console.log("Selected Indian voice:", foundVoice.name, foundVoice.lang);
+      } else {
+        // console.log("No specific Indian voice found, will use system default.");
+        setSelectedVoice(null); // Fallback to default
+      }
+    };
+
+    // Voices might load asynchronously.
+    // The 'voiceschanged' event is the most reliable way to know when voices are ready.
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadAndSetVoices;
+    }
+    loadAndSetVoices(); // Attempt to load voices immediately as well
+
+    return () => {
+      if (isSupported && window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, [isSupported]);
 
   const speak = useCallback((text: string) => {
     if (!isSupported || !text) return;
 
-    // Cancel any currently speaking utterance before starting a new one
     if (window.speechSynthesis.speaking) {
       window.speechSynthesis.cancel();
     }
     
     try {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.8; // Set speech rate to 0.8
+      utterance.rate = 0.8; 
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
       utterance.onstart = () => {
         setIsSpeaking(true);
       };
@@ -44,9 +110,7 @@ export function useSpeechSynthesis(): SpeechSynthesisHook {
       };
       utterance.onerror = (event) => {
         if (event.error === 'interrupted') {
-          // Speech was interrupted, likely by a new speak request or cancel.
-          // This is often an expected behavior, so we don't log it as a critical error.
-          // console.info("Speech synthesis interrupted:", event.error); // Optionally log as info
+          // console.info("Speech synthesis interrupted:", event.error); 
         } else {
           console.error("Speech synthesis error:", event.error, event);
         }
@@ -60,7 +124,7 @@ export function useSpeechSynthesis(): SpeechSynthesisHook {
       setIsSpeaking(false);
       setCurrentUtterance(null);
     }
-  }, [isSupported]);
+  }, [isSupported, selectedVoice]);
 
   const cancel = useCallback(() => {
     if (!isSupported) return;
@@ -69,7 +133,6 @@ export function useSpeechSynthesis(): SpeechSynthesisHook {
     setCurrentUtterance(null);
   }, [isSupported]);
 
-  // Clean up on unmount
   useEffect(() => {
     return () => {
       if (isSupported) {
@@ -77,7 +140,6 @@ export function useSpeechSynthesis(): SpeechSynthesisHook {
       }
     };
   }, [isSupported]);
-
 
   return { speak, cancel, isSpeaking, isSupported, currentUtterance };
 }
