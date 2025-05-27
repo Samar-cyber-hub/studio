@@ -30,10 +30,11 @@ export function HumorousChatClient() {
         {
           id: "initial-bot",
           role: "assistant",
-          content: "Namaste! Ready for some fun chat, yaar? Kya haal aur! sab badhiya hai ghar mwin aur aaj ka din kaisa hai chaal?",
+          content: "Namaste! yaar? Kya haal aur! sab badhiya hai ghar mein aur aaj ka din kaisa hai ",
           createdAt: new Date()
         }
       ]}
     />
   );
 }
+
