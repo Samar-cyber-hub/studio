@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -41,7 +42,13 @@ export function useSpeechSynthesis(): SpeechSynthesisHook {
         setCurrentUtterance(null);
       };
       utterance.onerror = (event) => {
-        console.error("Speech synthesis error:", event.error);
+        if (event.error === 'interrupted') {
+          // Speech was interrupted, likely by a new speak request or cancel.
+          // This is often an expected behavior, so we don't log it as a critical error.
+          // console.info("Speech synthesis interrupted:", event.error); // Optionally log as info
+        } else {
+          console.error("Speech synthesis error:", event.error, event);
+        }
         setIsSpeaking(false);
         setCurrentUtterance(null);
       };
