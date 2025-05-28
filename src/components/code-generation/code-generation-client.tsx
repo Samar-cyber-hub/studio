@@ -64,7 +64,7 @@ export function CodeGenerationClient() {
             <div className="flex items-center gap-2">
               <span>Request Code Snippet</span>
               <Image 
-                src="https://placehold.co/40x40.png" 
+                src="https://placehold.co/32x32.png" 
                 alt="AI Coder Robot" 
                 width={32} 
                 height={32} 
