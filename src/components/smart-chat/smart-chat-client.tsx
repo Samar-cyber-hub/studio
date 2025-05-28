@@ -15,32 +15,22 @@ export function SmartChatClient() {
     createdAt: new Date()
   };
 
-  // This state is mainly to correctly pass initialMessages to ChatInterface
   const [currentInitialMessages, setCurrentInitialMessages] = useState<Message[]>([initialBotMessage]);
 
   const getFormattedHistoryForAI = (currentMessages: Message[]): string => {
-    // Filter out any initial system messages if they are not meant to be part of "history" for the AI
-    // or ensure the AI prompt handles a history that might start with an AI greeting.
-    // The current smartChatFlow prompt is designed to handle history that might start with an AI greeting.
     return currentMessages
       .map((msg) => `${msg.role === "user" ? "User" : "AI"}: ${msg.content}`)
       .join("\\n");
   };
   
   const handleSendMessage = async (userInput: string, currentMessagesFromChatInterface?: Message[]) => {
-    // currentMessagesFromChatInterface includes all messages, with the new user input typically last.
-    // We need the history *before* the current userInput for the AI.
     const historyForAIInput = currentMessagesFromChatInterface 
-        ? currentMessagesFromChatInterface.slice(0, -1) // All messages except the last one (current user input)
+        ? currentMessagesFromChatInterface.slice(0, -1)
         : []; 
 
-    // If historyForAIInput is empty (e.g. first message after a clear), 
-    // and initialBotMessage was the start, pass empty string.
-    // Otherwise, format the existing history.
     const currentHistoryString = (historyForAIInput.length === 1 && historyForAIInput[0].id === initialBotMessage.id) || historyForAIInput.length === 0
       ? "" 
       : getFormattedHistoryForAI(historyForAIInput);
-
 
     try {
       const input: SmartChatInput = { 
@@ -49,8 +39,6 @@ export function SmartChatClient() {
       };
       const output = await smartChat(input);
 
-      // Construct the full history that ChatInterface should display.
-      // This includes the messages before the current user input, the user input itself, and the new bot response.
       const userMessageForHistory: Message = currentMessagesFromChatInterface && currentMessagesFromChatInterface.length > 0
         ? currentMessagesFromChatInterface[currentMessagesFromChatInterface.length - 1] 
         : { id: Date.now().toString() + "-user-fallback", role: "user", content: userInput, createdAt: new Date()};
@@ -63,14 +51,14 @@ export function SmartChatClient() {
       };
       
       const newFullHistoryArray: Message[] = [
-        ...historyForAIInput, // History before user's current message
-        userMessageForHistory, // User's current message
-        botMessageForHistory  // AI's response to current message
+        ...historyForAIInput,
+        userMessageForHistory,
+        botMessageForHistory
       ];
 
       return { 
-        response: output.chatbotResponse, // This is just the bot's latest reply text
-        history: newFullHistoryArray     // This is the complete history ChatInterface should adopt
+        response: output.chatbotResponse,
+        history: newFullHistoryArray
       };
 
     } catch (error) {
@@ -104,12 +92,19 @@ export function SmartChatClient() {
   };
 
   const handleChatClear = () => {
-    // The ChatInterface will reset its internal messages to its `initialMessages`.
-    // No further state change needed in SmartChatClient as `handleSendMessage` derives history
-    // from `currentMessagesFromChatInterface` passed by ChatInterface.
-    // console.log("Chat cleared in SmartChatClient");
+    // setCurrentInitialMessages ensures ChatInterface gets the correct initial messages when it re-renders after clear
+    setCurrentInitialMessages([initialBotMessage]); 
   };
 
+  const handleSaveChatMessage = (messageContent: string) => {
+    // For now, just show a toast. Actual save logic can be implemented here.
+    console.log("Chat to save:", messageContent);
+    toast({
+      title: "Chat Snippet Saved!",
+      description: "The chat message has been copied to the console (simulation).", 
+    });
+    // Example: navigator.clipboard.writeText(messageContent);
+  };
 
   return (
     <ChatInterface
@@ -118,6 +113,7 @@ export function SmartChatClient() {
       placeholder="Ask me anything, yaar!"
       chatHistoryEnabled={true} 
       onClearChat={handleChatClear}
+      onSaveChatMessage={handleSaveChatMessage} // Pass the new handler
     />
   );
 }

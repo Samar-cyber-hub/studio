@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Paperclip, Send, Mic, Loader2, Trash2 } from "lucide-react"; // Added Trash2
+import { Paperclip, Send, Mic, Loader2, Trash2 } from "lucide-react";
 import { useSpeechSynthesis } from "@/hooks/use-speech-synthesis";
 import { ChatMessage, type Message } from "./chat-message";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,8 @@ interface ChatInterfaceProps {
   initialMessages?: Message[];
   placeholder?: string;
   chatHistoryEnabled?: boolean;
-  onClearChat?: () => void; // Optional callback for when chat is cleared
+  onClearChat?: () => void;
+  onSaveChatMessage?: (messageContent: string) => void; // New prop for saving individual messages
 }
 
 export function ChatInterface({
@@ -24,19 +25,22 @@ export function ChatInterface({
   placeholder = "Type your message...",
   chatHistoryEnabled = false,
   onClearChat,
+  onSaveChatMessage, // Destructure new prop
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollAreaViewportRef = useRef<HTMLDivElement>(null); // Changed ref name for clarity
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { speak, cancel, isSpeaking, isSupported, currentUtterance } = useSpeechSynthesis();
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+    // Scroll to bottom when messages change
+    if (scrollAreaViewportRef.current) {
+      const { scrollHeight, clientHeight } = scrollAreaViewportRef.current;
+      scrollAreaViewportRef.current.scrollTo({ top: scrollHeight - clientHeight, behavior: 'smooth' });
     }
   }, [messages]);
   
@@ -71,7 +75,7 @@ export function ChatInterface({
     try {
       const result = await sendMessage(
         newUserMessage.content,
-        chatHistoryEnabled ? messages : undefined // messages here will include the new user message
+        chatHistoryEnabled ? messages : undefined
       );
       
       let botResponseContent: string;
@@ -92,7 +96,6 @@ export function ChatInterface({
       };
 
       if (chatHistoryEnabled && updatedHistory) {
-        // If history is provided by sendMessage, it's assumed to be the complete, authoritative list.
         setMessages(updatedHistory);
       } else {
         setMessages((prev) => [...prev, newBotMessage]);
@@ -114,8 +117,8 @@ export function ChatInterface({
   };
 
   const handleClearChat = () => {
-    setMessages(initialMessages);
-    setInput(""); // Also clear the input field
+    setMessages(initialMessages.length > 0 ? initialMessages : []);
+    setInput("");
     if (onClearChat) {
       onClearChat();
     }
@@ -124,7 +127,7 @@ export function ChatInterface({
 
   return (
     <div className="flex flex-col h-[calc(100vh-12rem)] md:h-[calc(100vh-10rem)] bg-card rounded-lg shadow-lg overflow-hidden">
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+      <ScrollArea className="flex-1 p-4" viewportRef={scrollAreaViewportRef}> {/* Pass viewportRef to ScrollArea */}
         <div className="space-y-4">
           {messages.map((msg) => (
             <ChatMessage
@@ -134,6 +137,7 @@ export function ChatInterface({
               onStopSpeak={isSupported ? handleStopSpeak : undefined}
               isSpeaking={isSpeaking}
               isCurrentSpeakingMessage={speakingMessageId === msg.id}
+              onSaveChat={onSaveChatMessage} // Pass down the save handler
             />
           ))}
           {isLoading && messages.length > 0 && messages[messages.length-1].role === 'user' && (
@@ -167,18 +171,20 @@ export function ChatInterface({
             {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
             <span className="sr-only">Send</span>
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={handleClearChat}
-            className="text-muted-foreground hover:text-destructive"
-            aria-label="Clear chat"
-            disabled={isLoading}
-          >
-            <Trash2 className="h-5 w-5" />
-            <span className="sr-only">Clear Chat</span>
-          </Button>
+          {onClearChat && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleClearChat}
+              className="text-muted-foreground hover:text-destructive"
+              aria-label="Clear chat"
+              disabled={isLoading}
+            >
+              <Trash2 className="h-5 w-5" />
+              <span className="sr-only">Clear Chat</span>
+            </Button>
+          )}
         </form>
       </div>
     </div>

@@ -1,7 +1,8 @@
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Bot, User, Volume2, StopCircle } from "lucide-react";
+import { Bot, User, Volume2, StopCircle, Download } from "lucide-react"; // Added Download icon
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CodeBlock } from "./code-block";
@@ -19,9 +20,10 @@ interface ChatMessageProps {
   onStopSpeak?: () => void;
   isSpeaking?: boolean;
   isCurrentSpeakingMessage?: boolean;
+  onSaveChat?: (messageContent: string) => void; // New prop for saving chat
 }
 
-export function ChatMessage({ message, onSpeak, onStopSpeak, isSpeaking, isCurrentSpeakingMessage }: ChatMessageProps) {
+export function ChatMessage({ message, onSpeak, onStopSpeak, isSpeaking, isCurrentSpeakingMessage, onSaveChat }: ChatMessageProps) {
   const isUser = message.role === "user";
   const isBot = message.role === "assistant";
 
@@ -64,15 +66,24 @@ export function ChatMessage({ message, onSpeak, onStopSpeak, isSpeaking, isCurre
         >
           {message.content}
         </ReactMarkdown>
-        {isBot && onSpeak && onStopSpeak && (
-          <div className="mt-2">
-            {isCurrentSpeakingMessage && isSpeaking ? (
-               <Button variant="ghost" size="sm" onClick={onStopSpeak} className="h-7 text-xs px-2 py-1">
-                 <StopCircle className="mr-1 h-4 w-4" /> Stop
-               </Button>
-            ) : (
-              <Button variant="ghost" size="sm" onClick={() => onSpeak(message.content)} className="h-7 text-xs px-2 py-1">
-                <Volume2 className="mr-1 h-4 w-4" /> Speak
+        {isBot && (onSpeak || onSaveChat) && (
+          <div className="mt-2 flex items-center gap-2">
+            {onSpeak && onStopSpeak && (
+              <>
+                {isCurrentSpeakingMessage && isSpeaking ? (
+                  <Button variant="ghost" size="sm" onClick={onStopSpeak} className="h-7 text-xs px-2 py-1">
+                    <StopCircle className="mr-1 h-4 w-4" /> Stop
+                  </Button>
+                ) : (
+                  <Button variant="ghost" size="sm" onClick={() => onSpeak(message.content)} className="h-7 text-xs px-2 py-1">
+                    <Volume2 className="mr-1 h-4 w-4" /> Speak
+                  </Button>
+                )}
+              </>
+            )}
+            {onSaveChat && (
+              <Button variant="ghost" size="sm" onClick={() => onSaveChat(message.content)} className="h-7 text-xs px-2 py-1">
+                <Download className="mr-1 h-4 w-4" /> Save
               </Button>
             )}
           </div>
