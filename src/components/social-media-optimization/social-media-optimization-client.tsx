@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -13,7 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Badge } from "@/components/ui/badge";
 import { suggestSocialMediaContent, type SocialMediaInput, type SocialMediaOutput } from "@/ai/flows/social-media-optimization";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, ThumbsUp, Tags, Hash, Film, Search, Image as ImageIcon } from "lucide-react";
+import { Loader2, ThumbsUp, Tags, Hash, Film, Search, Image as ImageIcon, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import { generateMedia } from "@/ai/flows/ai-media-generation";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -43,6 +44,35 @@ export function SocialMediaOptimizationClient() {
     },
   });
 
+  const generateAndSetThumbnail = async (prompt: string) => {
+    if (!prompt) return;
+    setIsGeneratingThumbnail(true);
+    setThumbnailUrl(null); // Clear previous thumbnail
+    try {
+      const thumbnailOutput = await generateMedia({ prompt: prompt, mediaType: "image" });
+      if (thumbnailOutput.mediaUrl && !thumbnailOutput.mediaUrl.startsWith("Unsupported") && !thumbnailOutput.mediaUrl.startsWith("Error:")) {
+        setThumbnailUrl(thumbnailOutput.mediaUrl);
+      } else {
+        setThumbnailUrl(null); // Ensure null if error or unsupported
+        toast({
+            title: "Thumbnail Generation Issue",
+            description: thumbnailOutput.mediaUrl || "Could not generate thumbnail for this prompt.",
+            variant: "destructive",
+          });
+      }
+    } catch (thumbError) {
+      console.error("Thumbnail generation error:", thumbError);
+      setThumbnailUrl(null);
+      toast({
+        title: "Thumbnail Error",
+        description: "An unexpected error occurred while generating the thumbnail.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingThumbnail(false);
+    }
+  };
+
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsGeneratingSuggestions(true);
     setSuggestions(null);
@@ -56,24 +86,8 @@ export function SocialMediaOptimizationClient() {
         description: "Social media content ideas generated.",
       });
 
-      // Automatically try to generate thumbnail
       if (output.thumbnailPrompt) {
-        setIsGeneratingThumbnail(true);
-        try {
-          const thumbnailOutput = await generateMedia({ prompt: output.thumbnailPrompt, mediaType: "image" });
-          if (thumbnailOutput.mediaUrl && !thumbnailOutput.mediaUrl.startsWith("Unsupported")) {
-            setThumbnailUrl(thumbnailOutput.mediaUrl);
-          }
-        } catch (thumbError) {
-          console.error("Thumbnail generation error:", thumbError);
-          toast({
-            title: "Thumbnail Error",
-            description: "Could not generate thumbnail automatically.",
-            variant: "destructive",
-          });
-        } finally {
-          setIsGeneratingThumbnail(false);
-        }
+        await generateAndSetThumbnail(output.thumbnailPrompt);
       }
 
     } catch (error) {
@@ -85,6 +99,18 @@ export function SocialMediaOptimizationClient() {
       });
     } finally {
       setIsGeneratingSuggestions(false);
+    }
+  };
+
+  const handleRegenerateThumbnail = async () => {
+    if (suggestions?.thumbnailPrompt) {
+      await generateAndSetThumbnail(suggestions.thumbnailPrompt);
+    } else {
+      toast({
+        title: "Cannot Regenerate",
+        description: "No thumbnail prompt available to regenerate.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -162,8 +188,8 @@ export function SocialMediaOptimizationClient() {
               />
             </CardContent>
             <CardFooter>
-              <Button type="submit" disabled={isGeneratingSuggestions}>
-                {isGeneratingSuggestions && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" disabled={isGeneratingSuggestions || isGeneratingThumbnail}>
+                {(isGeneratingSuggestions || isGeneratingThumbnail) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Get Suggestions
               </Button>
             </CardFooter>
@@ -202,19 +228,29 @@ export function SocialMediaOptimizationClient() {
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold mb-2 flex items-center"><ImageIcon className="mr-2 h-5 w-5 text-primary" /> Thumbnail Idea</h3>
                   <p className="text-sm italic text-muted-foreground mb-2">Prompt: "{suggestions.thumbnailPrompt}"</p>
+                  
                   {isGeneratingThumbnail && (
-                     <div className="flex items-center text-sm text-muted-foreground">
+                     <div className="flex items-center text-sm text-muted-foreground my-2">
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating thumbnail...
                      </div>
                   )}
-                  {thumbnailUrl && (
+                  {thumbnailUrl && !isGeneratingThumbnail && (
                     <div className="mt-2 relative w-full max-w-xs aspect-video rounded-md overflow-hidden border shadow-md">
                       <Image src={thumbnailUrl} alt="Generated Thumbnail" layout="fill" objectFit="cover" data-ai-hint="social media thumbnail"/>
                     </div>
                   )}
                   {!isGeneratingThumbnail && !thumbnailUrl && (
-                    <p className="text-sm text-red-500">Could not generate thumbnail for this prompt.</p>
+                    <p className="text-sm text-red-500 my-2">Could not generate thumbnail for this prompt, or generation failed.</p>
                   )}
+                   <Button 
+                      onClick={handleRegenerateThumbnail} 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                      disabled={isGeneratingThumbnail || !suggestions.thumbnailPrompt}
+                    >
+                      <RefreshCw className="mr-2 h-4 w-4" /> Regenerate Thumbnail
+                    </Button>
                 </div>
               )}
             </CardContent>
