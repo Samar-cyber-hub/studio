@@ -47,7 +47,6 @@ export function MediaGenerationClient() {
         variant: "default",
       });
       setIsLoading(false);
-      // form.setValue("mediaType", "image"); // Optionally reset
       return;
     }
 
@@ -55,12 +54,22 @@ export function MediaGenerationClient() {
       const input: AIMediaGenerationInput = { prompt: data.prompt, mediaType: data.mediaType };
       const output = await generateMedia(input);
       setGeneratedMedia(output);
-      toast({
-        title: "Media Generated!",
-        description: `Your ${data.mediaType} is ready.`,
-      });
+      if (output.mediaUrl && output.mediaUrl.startsWith("data:image/")) {
+        toast({
+          title: "Media Generated!",
+          description: `Your ${data.mediaType} is ready.`,
+        });
+      } else {
+        toast({
+          title: "Media Generation Failed",
+          description: output.mediaUrl || "Could not generate media. Please try again.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Media generation error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
+      setGeneratedMedia({ mediaUrl: `Error: ${errorMessage}` });
       toast({
         title: "Error Generating Media",
         description: "Something went wrong. Please try again.",
@@ -73,11 +82,16 @@ export function MediaGenerationClient() {
 
   const selectedMediaType = form.watch("mediaType");
 
+  const isImageGenerated = generatedMedia?.mediaUrl?.startsWith("data:image/");
+  const isUnsupportedType = generatedMedia?.mediaUrl?.startsWith("Unsupported");
+  const isErrorResponse = generatedMedia?.mediaUrl?.startsWith("Error:"); // Added semicolon here
+
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Generate AI Media 🎨🖼🖌</CardTitle>
+          <CardTitle>{'Generate AI Media 🎨🖼🖌'}</CardTitle>
         </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -120,7 +134,7 @@ export function MediaGenerationClient() {
                     </Select>
                     {selectedMediaType !== "image" && (
                        <FormDescription className="text-orange-600">
-                         This media type is not yet supported. Image generation will be used by default if selected.
+                         This media type is not yet supported. Image generation will be used if you proceed.
                        </FormDescription>
                     )}
                     <FormMessage />
@@ -145,7 +159,7 @@ export function MediaGenerationClient() {
         </Card>
       )}
 
-      {generatedMedia && generatedMedia.mediaUrl && !generatedMedia.mediaUrl.startsWith("Unsupported") && (
+      {isImageGenerated && (
         <Card>
           <CardHeader>
             <CardTitle>Generated Media</CardTitle>
@@ -153,7 +167,7 @@ export function MediaGenerationClient() {
           <CardContent className="flex flex-col items-center">
             <div className="relative w-full max-w-md aspect-square rounded-lg overflow-hidden border shadow-lg">
               <Image 
-                src={generatedMedia.mediaUrl} 
+                src={generatedMedia!.mediaUrl!} 
                 alt="Generated AI Media" 
                 layout="fill" 
                 objectFit="contain" 
@@ -163,21 +177,34 @@ export function MediaGenerationClient() {
           </CardContent>
            <CardFooter className="justify-center">
              <Button asChild variant="outline">
-               <a href={generatedMedia.mediaUrl} download target="_blank" rel="noopener noreferrer">
+               <a href={generatedMedia!.mediaUrl!} download={`popgpt-media-${Date.now()}.png`} target="_blank" rel="noopener noreferrer">
                  <Download className="mr-2 h-4 w-4" /> Download
                </a>
              </Button>
            </CardFooter>
         </Card>
       )}
-      {generatedMedia && generatedMedia.mediaUrl && generatedMedia.mediaUrl.startsWith("Unsupported") && (
+      
+      {isUnsupportedType && (
          <Card>
           <CardHeader>
             <CardTitle>Media Generation Note</CardTitle>
-          </CardHeader>
+          </Header>
           <CardContent>
-            <p className="text-muted-foreground">{generatedMedia.mediaUrl}</p>
+            <p className="text-muted-foreground">{generatedMedia!.mediaUrl!}</p>
             <p className="mt-2">Currently, only image generation is supported. Please select "Image" as the media type.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {isErrorResponse && (
+         <Card>
+          <CardHeader>
+            <CardTitle className="text-destructive">Media Generation Error</CardTitle>
+          </Header>
+          <CardContent>
+            <p className="text-destructive-foreground bg-destructive/10 p-3 rounded-md border border-destructive/30">{generatedMedia!.mediaUrl!}</p>
+            <p className="mt-2 text-muted-foreground">Sorry, an error occurred while generating the media. Please try again.</p>
           </CardContent>
         </Card>
       )}
