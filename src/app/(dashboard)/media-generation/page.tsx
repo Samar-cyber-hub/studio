@@ -1,20 +1,9 @@
-import { PageHeader } from "@/components/common/page-header";
-import { MediaGenerationClient } from "@/components/media-generation/media-generation-client";
-import { ImageIcon } from "lucide-react";
+// This page has been removed as the Media Generation feature is deleted.
+// This file can be deleted.
+// To prevent build errors, we redirect to another page.
+import { redirect } from 'next/navigation';
 
-export const metadata = {
-  title: "AI Media Generation | PopGPT :AI",
-};
-
-export default function MediaGenerationPage() {
-  return (
-    <>
-      <PageHeader
-        title="AI-Powered Media Generation"
-        description="Generate high-quality images. Support for 3D models, realistic images, and fusion art coming soon."
-        icon={ImageIcon}
-      />
-      <MediaGenerationClient />
-    </>
-  );
+export default function ObsoleteMediaGenerationPage() {
+  redirect('/smart-chat'); // Or any other valid page
+  return null;
 }

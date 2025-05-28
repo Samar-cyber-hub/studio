@@ -1,55 +1,28 @@
-// This is an AI-powered media generation flow that can generate images, 3D AI models, realistic images, and fusion AI art.
-// It exports the generateMedia function, AIMediaGenerationInput, and AIMediaGenerationOutput types.
 
 'use server';
-
-import {ai} from '@/ai/genkit';
+/**
+ * @fileOverview AI media generation flow. This feature has been removed.
+ * The exported function exists as a stub to prevent runtime errors
+ * in other components that might still try to import from this file.
+ */
 import {z} from 'genkit';
 
-const AIMediaGenerationInputSchema = z.object({
-  prompt: z.string().describe('The prompt to use for generating the media.'),
-  mediaType: z.enum(['image', '3dModel', 'realisticImage', 'fusionArt']).describe('The type of media to generate.'),
+export const GenerateMediaInputSchema = z.object({
+  prompt: z.string().describe('The prompt for media generation.'),
+  mediaType: z.string().describe('The type of media to generate (e.g., "image", "video", "3d_model").'),
 });
-export type AIMediaGenerationInput = z.infer<typeof AIMediaGenerationInputSchema>;
+export type GenerateMediaInput = z.infer<typeof GenerateMediaInputSchema>;
 
-const AIMediaGenerationOutputSchema = z.object({
-  mediaUrl: z.string().describe('The URL of the generated media.'),
+export const GenerateMediaOutputSchema = z.object({
+  mediaUrl: z.string().describe('The URL or data URI of the generated media, or an error/unsupported message.'),
+  status: z.string().describe('Status of the generation (e.g., "success", "error", "unsupported").'),
 });
-export type AIMediaGenerationOutput = z.infer<typeof AIMediaGenerationOutputSchema>;
+export type GenerateMediaOutput = z.infer<typeof GenerateMediaOutputSchema>;
 
-export async function generateMedia(input: AIMediaGenerationInput): Promise<AIMediaGenerationOutput> {
-  return generateMediaFlow(input);
+export async function generateMedia(input: GenerateMediaInput): Promise<GenerateMediaOutput> {
+  console.warn("AI Media Generation feature has been removed. Thumbnail generation in Social Media tool will not produce an image.");
+  return {
+    mediaUrl: "Error: AI Media Generation feature has been removed. Thumbnail cannot be generated.",
+    status: "error_feature_removed",
+  };
 }
-
-const generateMediaFlow = ai.defineFlow(
-  {
-    name: 'generateMediaFlow',
-    inputSchema: AIMediaGenerationInputSchema,
-    outputSchema: AIMediaGenerationOutputSchema,
-  },
-  async input => {
-    // Currently, only image generation is supported.
-    if (input.mediaType === 'image') {
-      try {
-        const {media} = await ai.generate({
-          model: 'googleai/gemini-2.0-flash-exp',
-          prompt: input.prompt,
-          config: {
-            responseModalities: ['TEXT', 'IMAGE'],
-          },
-        });
-        if (!media?.url) {
-          console.error('AI media generation did not return a valid media URL.');
-          return {mediaUrl: 'Error: Could not generate image. No URL returned.'};
-        }
-        return {mediaUrl: media.url};
-      } catch (e) {
-        console.error('Error during AI media generation:', e);
-        return {mediaUrl: 'Error: Exception during image generation.'};
-      }
-    } else {
-      // Return a placeholder if the media type is not supported.
-      return {mediaUrl: `Unsupported media type: ${input.mediaType}`};
-    }
-  }
-);
