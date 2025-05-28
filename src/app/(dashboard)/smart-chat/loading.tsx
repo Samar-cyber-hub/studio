@@ -9,7 +9,7 @@ export default function Loading() {
         <CardHeader>
           <CardTitle className="flex items-center justify-center text-xl">
             <Loader2 className="mr-3 h-6 w-6 animate-spin text-primary" />
-            Loading Smart Chat...
+            Loading Smart Fun Chat...
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center text-muted-foreground">

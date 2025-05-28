@@ -19,7 +19,7 @@ import { PopGptAppIcon } from "@/components/icons/popgpt-app-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
-  BotMessageSquare, // New icon for Smart Chat
+  BotMessageSquare,
   CodeXml,
   ImageIcon,
   Share2,
@@ -28,7 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/smart-chat", label: "Smart Chat", icon: BotMessageSquare },
+  { href: "/smart-chat", label: "Smart Fun Chat", icon: BotMessageSquare },
   { href: "/code-generation", label: "Code Generation", icon: CodeXml },
   { href: "/media-generation", label: "Media Generation", icon: ImageIcon },
   { href: "/social-media-optimization", label: "Social Media Tools", icon: Share2 },
