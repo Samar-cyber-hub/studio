@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState, useRef, useEffect, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Paperclip, Send, Mic, Loader2 } from "lucide-react";
+import { Paperclip, Send, Mic, Loader2, Trash2 } from "lucide-react"; // Added Trash2
 import { useSpeechSynthesis } from "@/hooks/use-speech-synthesis";
 import { ChatMessage, type Message } from "./chat-message";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ interface ChatInterfaceProps {
   initialMessages?: Message[];
   placeholder?: string;
   chatHistoryEnabled?: boolean;
+  onClearChat?: () => void; // Optional callback for when chat is cleared
 }
 
 export function ChatInterface({
@@ -21,6 +23,7 @@ export function ChatInterface({
   initialMessages = [],
   placeholder = "Type your message...",
   chatHistoryEnabled = false,
+  onClearChat,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -68,7 +71,7 @@ export function ChatInterface({
     try {
       const result = await sendMessage(
         newUserMessage.content,
-        chatHistoryEnabled ? messages : undefined
+        chatHistoryEnabled ? messages : undefined // messages here will include the new user message
       );
       
       let botResponseContent: string;
@@ -89,7 +92,8 @@ export function ChatInterface({
       };
 
       if (chatHistoryEnabled && updatedHistory) {
-        setMessages(updatedHistory); // Assumes history includes the new bot message
+        // If history is provided by sendMessage, it's assumed to be the complete, authoritative list.
+        setMessages(updatedHistory);
       } else {
         setMessages((prev) => [...prev, newBotMessage]);
       }
@@ -107,6 +111,15 @@ export function ChatInterface({
       setIsLoading(false);
       inputRef.current?.focus();
     }
+  };
+
+  const handleClearChat = () => {
+    setMessages(initialMessages);
+    setInput(""); // Also clear the input field
+    if (onClearChat) {
+      onClearChat();
+    }
+    inputRef.current?.focus();
   };
 
   return (
@@ -153,6 +166,18 @@ export function ChatInterface({
           <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
             {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
             <span className="sr-only">Send</span>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={handleClearChat}
+            className="text-muted-foreground hover:text-destructive"
+            aria-label="Clear chat"
+            disabled={isLoading}
+          >
+            <Trash2 className="h-5 w-5" />
+            <span className="sr-only">Clear Chat</span>
           </Button>
         </form>
       </div>
