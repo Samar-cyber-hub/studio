@@ -7,4 +7,5 @@ import '@/ai/flows/smart-chat-flow.ts'; // Updated from persistent-memory-chat a
 import '@/ai/flows/social-media-optimization.ts';
 // import '@/ai/flows/ai-media-generation.ts'; // Removed as feature is deleted
 import '@/ai/flows/image-generation-flow.ts'; // Added new image generation flow
+import '@/ai/flows/logo-generation-flow.ts'; // Added new logo generation flow
 

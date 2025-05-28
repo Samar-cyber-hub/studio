@@ -21,15 +21,17 @@ import { Separator } from "@/components/ui/separator";
 import {
   BotMessageSquare,
   CodeXml,
-  ImageIcon, // Added ImageIcon
+  ImageIcon,
   Share2,
   Sparkles,
+  Palette, // Added Palette icon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/smart-chat", label: "Smart Fun Chat", icon: BotMessageSquare },
-  { href: "/image-generation", label: "Image Generation", icon: ImageIcon }, // New Image Generation tool
+  { href: "/image-generation", label: "Image Generation", icon: ImageIcon },
+  { href: "/logo-generation", label: "Logo Generation", icon: Palette }, // New Logo Generation tool
   { href: "/code-generation", label: "Code Generation", icon: CodeXml },
   { href: "/social-media-optimization", label: "Social Media Tools", icon: Share2 },
 ];
