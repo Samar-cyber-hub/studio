@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -27,21 +28,23 @@ export async function generateCode(input: GenerateCodeInput): Promise<GenerateCo
   return generateCodeFlow(input);
 }
 
-const selfCheckCode = ai.defineTool({
-  name: 'selfCheckCode',
-  description: 'This tool checks the generated code for errors and returns true if no errors are found, otherwise false.',
-  inputSchema: z.object({
-    code: z.string().describe('The code to check for errors.'),
-    language: z.string().describe('The programming language of the code.'),
-  }),
-  outputSchema: z.boolean(),
+const selfCheckCode = ai.defineTool(
+  {
+    name: 'selfCheckCode',
+    description: 'This tool checks the generated code for errors and returns true if no errors are found, otherwise false.',
+    inputSchema: z.object({
+      code: z.string().describe('The code to check for errors.'),
+      language: z.string().describe('The programming language of the code.'),
+    }),
+    outputSchema: z.boolean(),
+  },
   async (input) => {
     // In a real application, this would involve linting, compiling,
     // and running unit tests. For this example, we'll just return true.
     console.log(`Running self check on ${input.language} code:\n${input.code}`);
     return true; // Assume code is always error-free for this example
-  },
-});
+  }
+);
 
 const generateCodePrompt = ai.definePrompt({
   name: 'generateCodePrompt',
@@ -56,7 +59,8 @@ const generateCodePrompt = ai.definePrompt({
   Set the "isErrorFree" field to the result of the selfCheckCode tool call.
 
   User request: {{{request}}}
-  `,config: {
+  `,
+  config: {
     safetySettings: [
       {
         category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
@@ -85,3 +89,4 @@ const generateCodeFlow = ai.defineFlow(
     return output;
   }
 );
+
