@@ -34,43 +34,42 @@ const generateImageFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      const {media} = await ai.generate({
+      const {media, text} = await ai.generate({
         model: 'googleai/gemini-2.0-flash-exp', // Specific model for image generation
         prompt: input.prompt,
         config: {
-          responseModalities: ['IMAGE'], // Request only IMAGE
-          // It seems 'TEXT' modality might also be needed for some configurations,
-                          // if issues arise, try ['TEXT', 'IMAGE']
-                          // For now, let's try with IMAGE only as per the simplest examples
-                          // Update: Documentation suggests TEXT is often required with IMAGE for Gemini.
-                          // Let's use ['TEXT', 'IMAGE'] to be safe and handle potential text output if any.
-                          // responseModalities: ['TEXT', 'IMAGE'],
+          // IMPORTANT: Gemini image generation often requires both TEXT and IMAGE modalities.
+          responseModalities: ['TEXT', 'IMAGE'], 
         },
       });
 
       if (media && media.url) {
         return {imageDataUri: media.url, errorMessage: null};
       } else {
-        // Attempt with TEXT and IMAGE if the first one fails or returns no URL
-        // This is a common pattern for some Gemini image generation setups.
-        const {media: mediaWithText, text} = await ai.generate({
-            model: 'googleai/gemini-2.0-flash-exp',
-            prompt: input.prompt,
-            config: {
-                responseModalities: ['TEXT', 'IMAGE'],
-            },
-        });
-        if (mediaWithText && mediaWithText.url) {
-            return {imageDataUri: mediaWithText.url, errorMessage: null};
-        }
-        console.error('Image generation did not return a media URL. Text response:', text);
-        return {imageDataUri: null, errorMessage: 'Image generation succeeded but no image URL was returned. ' + (text || '')};
+        console.error('Image generation did not return a media URL. Text response (if any):', text);
+        return {
+          imageDataUri: null, 
+          errorMessage: 'Image generation succeeded but no image URL was returned. ' + (text || 'No additional text response.')
+        };
       }
     } catch (error: any) {
       console.error('Error during image generation flow:', error);
+      // Try to extract a more specific error message if available
+      let detailedErrorMessage = error.message || 'An unexpected error occurred during image generation.';
+      if (error.cause && typeof error.cause === 'string') {
+        detailedErrorMessage += ` Cause: ${error.cause}`;
+      } else if (error.cause && typeof error.cause === 'object' && error.cause.message) {
+        detailedErrorMessage += ` Cause: ${error.cause.message}`;
+      }
+
+      // Check for the specific modality error in the message
+      if (error.message && error.message.includes('Model does not support the requested response modalities')) {
+        detailedErrorMessage = 'The AI model had an issue with the image request modalities. This might be a temporary issue or a configuration problem with the model.';
+      }
+      
       return {
         imageDataUri: null,
-        errorMessage: error.message || 'An unexpected error occurred during image generation.',
+        errorMessage: detailedErrorMessage,
       };
     }
   }
