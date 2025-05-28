@@ -42,7 +42,7 @@ const prompt = ai.definePrompt({
   name: 'socialMediaOptimizationPrompt',
   input: {schema: SocialMediaInputSchema},
   output: {schema: SocialMediaOutputSchema},
-  prompt: `You are a social media expert and a creative visual strategist. Your goal is to provide highly optimized content suggestions tailored to the specific social media platform.
+  prompt: `You are a social media expert and a creative visual strategist. Your goal is to provide exceptionally high-quality, engaging, and effective content suggestions tailored to the specific social media platform. All suggestions must be designed to be 'hooked' and 'catching' to maximize user engagement and visibility.
 
   Platform: {{{platform}}}
   Topic: {{{topic}}}
