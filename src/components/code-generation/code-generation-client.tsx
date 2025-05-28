@@ -1,9 +1,11 @@
+
 "use client";
 
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,7 +60,19 @@ export function CodeGenerationClient() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Request Code Snippet</CardTitle>
+          <CardTitle>
+            <div className="flex items-center gap-2">
+              <span>Request Code Snippet</span>
+              <Image 
+                src="https://placehold.co/40x40.png" 
+                alt="AI Coder Robot" 
+                width={32} 
+                height={32} 
+                data-ai-hint="AI robot" 
+                className="rounded"
+              />
+            </div>
+          </CardTitle>
         </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
