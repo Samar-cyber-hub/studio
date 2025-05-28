@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 
 export default function HomePage() {
   // Redirect to the first feature page, or implement a landing page here.
-  redirect('/humorous-chat');
+  redirect('/smart-chat'); 
   // Alternatively, for a landing page:
   // return (
   //   <div className="flex flex-col items-center justify-center min-h-screen p-8">
@@ -10,7 +10,7 @@ export default function HomePage() {
   //     <p className="text-xl text-foreground mb-8 text-center max-w-2xl">
   //       Your friendly AI companion with a touch of humor and powerful tools for code, media, and social media.
   //     </p>
-  //     <Link href="/humorous-chat">
+  //     <Link href="/smart-chat">
   //       <Button size="lg">Start Chatting</Button>
   //     </Link>
   //   </div>

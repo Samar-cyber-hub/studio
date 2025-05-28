@@ -19,19 +19,16 @@ import { PopGptAppIcon } from "@/components/icons/popgpt-app-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
-  MessageSquareHeart,
-  BrainCircuit,
+  BotMessageSquare, // New icon for Smart Chat
   CodeXml,
   ImageIcon,
   Share2,
-  Github,
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/humorous-chat", label: "Fun Chat", icon: MessageSquareHeart },
-  { href: "/persistent-memory", label: "Persistent Memory Chat", icon: BrainCircuit },
+  { href: "/smart-chat", label: "Smart Chat", icon: BotMessageSquare },
   { href: "/code-generation", label: "Code Generation", icon: CodeXml },
   { href: "/media-generation", label: "Media Generation", icon: ImageIcon },
   { href: "/social-media-optimization", label: "Social Media Tools", icon: Share2 },
