@@ -14,7 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Badge } from "@/components/ui/badge";
 import { suggestSocialMediaContent, type SocialMediaInput, type SocialMediaOutput } from "@/ai/flows/social-media-optimization";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, ThumbsUp, Tags, Hash, Film, Search, Image as ImageIcon, RefreshCw } from "lucide-react";
+import { Loader2, ThumbsUp, Tags, Hash, Film, Search, Image as ImageIcon, RefreshCw, Download } from "lucide-react";
 import Image from "next/image";
 import { generateMedia } from "@/ai/flows/ai-media-generation";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -242,15 +242,23 @@ export function SocialMediaOptimizationClient() {
                   {!isGeneratingThumbnail && !thumbnailUrl && (
                     <p className="text-sm text-red-500 my-2">Could not generate thumbnail for this prompt, or generation failed.</p>
                   )}
-                   <Button 
-                      onClick={handleRegenerateThumbnail} 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-2"
-                      disabled={isGeneratingThumbnail || !suggestions.thumbnailPrompt}
-                    >
-                      <RefreshCw className="mr-2 h-4 w-4" /> Regenerate Thumbnail
-                    </Button>
+                  <div className="mt-2 flex gap-2">
+                    <Button 
+                        onClick={handleRegenerateThumbnail} 
+                        variant="outline" 
+                        size="sm" 
+                        disabled={isGeneratingThumbnail || !suggestions.thumbnailPrompt}
+                      >
+                        <RefreshCw className="mr-2 h-4 w-4" /> Regenerate
+                      </Button>
+                      {thumbnailUrl && !isGeneratingThumbnail && (
+                        <Button asChild variant="outline" size="sm">
+                          <a href={thumbnailUrl} download={`thumbnail-${Date.now()}.png`} target="_blank" rel="noopener noreferrer">
+                            <Download className="mr-2 h-4 w-4" /> Download
+                          </a>
+                        </Button>
+                      )}
+                  </div>
                 </div>
               )}
             </CardContent>
