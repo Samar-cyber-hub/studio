@@ -8,8 +8,8 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { generateMedia, type AIMediaGenerationInput, type AIMediaGenerationOutput } from "@/ai/flows/ai-media-generation";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Download } from "lucide-react";
@@ -82,9 +82,9 @@ export function MediaGenerationClient() {
 
   const selectedMediaType = form.watch("mediaType");
 
-  const isImageGenerated = generatedMedia && generatedMedia.mediaUrl ? generatedMedia.mediaUrl.startsWith("data:image/") : false;
-  const isUnsupportedType = generatedMedia && generatedMedia.mediaUrl ? generatedMedia.mediaUrl.startsWith("Unsupported") : false;
-  const isErrorResponse = generatedMedia && generatedMedia.mediaUrl ? generatedMedia.mediaUrl.startsWith("Error:") : false;
+  const isImageGenerated = !!(generatedMedia?.mediaUrl?.startsWith("data:image/"));
+  const isUnsupportedType = !!(generatedMedia?.mediaUrl?.startsWith("Unsupported"));
+  const isErrorResponse = !!(generatedMedia?.mediaUrl?.startsWith("Error:"));
 
   return (
     <div className="space-y-6">
