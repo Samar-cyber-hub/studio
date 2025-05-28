@@ -1,21 +1,12 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
 export default function Loading() {
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-12rem)]">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-center text-xl">
-            <Loader2 className="mr-3 h-6 w-6 animate-spin text-primary" />
-            Loading Social Media Tools...
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center text-muted-foreground">
-          <p>Please wait while we gather the latest trends.</p>
-        </CardContent>
-      </Card>
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] p-4">
+      <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+      <p className="text-lg text-muted-foreground">Loading Social Media Tools...</p>
+      <p className="text-sm text-muted-foreground">Gathering the latest trends, please wait.</p>
     </div>
   );
 }
