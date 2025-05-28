@@ -16,7 +16,8 @@ interface ChatInterfaceProps {
   placeholder?: string;
   chatHistoryEnabled?: boolean;
   onClearChat?: () => void;
-  onSaveChatMessage?: (messageContent: string) => void; // New prop for saving individual messages
+  onSaveChatMessage?: (messageContent: string) => void;
+  onDeleteSingleMessage?: (messageId: string) => void; // New prop for deleting single message
 }
 
 export function ChatInterface({
@@ -25,19 +26,19 @@ export function ChatInterface({
   placeholder = "Type your message...",
   chatHistoryEnabled = false,
   onClearChat,
-  onSaveChatMessage, // Destructure new prop
+  onSaveChatMessage,
+  onDeleteSingleMessage, // Destructure new prop
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaViewportRef = useRef<HTMLDivElement>(null); // Changed ref name for clarity
+  const scrollAreaViewportRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { speak, cancel, isSpeaking, isSupported, currentUtterance } = useSpeechSynthesis();
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Scroll to bottom when messages change
     if (scrollAreaViewportRef.current) {
       const { scrollHeight, clientHeight } = scrollAreaViewportRef.current;
       scrollAreaViewportRef.current.scrollTo({ top: scrollHeight - clientHeight, behavior: 'smooth' });
@@ -47,6 +48,12 @@ export function ChatInterface({
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Update messages if initialMessages prop changes (e.g., after a clear chat)
+  useEffect(() => {
+    setMessages(initialMessages);
+  }, [initialMessages]);
+
 
   const handleSpeak = (text: string, messageId: string) => {
     setSpeakingMessageId(messageId);
@@ -75,29 +82,30 @@ export function ChatInterface({
     try {
       const result = await sendMessage(
         newUserMessage.content,
-        chatHistoryEnabled ? messages : undefined
+        chatHistoryEnabled ? messages : undefined // Send the current `messages` state
       );
       
       let botResponseContent: string;
-      let updatedHistory: Message[] | undefined;
+      let updatedHistoryFromAI: Message[] | undefined;
 
       if (typeof result === 'string') {
         botResponseContent = result;
       } else {
         botResponseContent = result.response;
-        updatedHistory = result.history;
+        updatedHistoryFromAI = result.history;
       }
       
-      const newBotMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: botResponseContent,
-        createdAt: new Date(),
-      };
-
-      if (chatHistoryEnabled && updatedHistory) {
-        setMessages(updatedHistory);
+      if (chatHistoryEnabled && updatedHistoryFromAI) {
+        // If AI provides full history, use it. This is preferred for consistency.
+        setMessages(updatedHistoryFromAI);
       } else {
+         // Otherwise, just append the new bot message.
+        const newBotMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: botResponseContent,
+          createdAt: new Date(),
+        };
         setMessages((prev) => [...prev, newBotMessage]);
       }
       
@@ -125,9 +133,16 @@ export function ChatInterface({
     inputRef.current?.focus();
   };
 
+  const handleDeleteSingleMessageInternal = (messageId: string) => {
+    setMessages((prevMessages) => prevMessages.filter(msg => msg.id !== messageId));
+    if (onDeleteSingleMessage) {
+      onDeleteSingleMessage(messageId); // Notify parent if it needs to do something
+    }
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-12rem)] md:h-[calc(100vh-10rem)] bg-card rounded-lg shadow-lg overflow-hidden">
-      <ScrollArea className="flex-1 p-4" viewportRef={scrollAreaViewportRef}> {/* Pass viewportRef to ScrollArea */}
+      <ScrollArea className="flex-1 p-4" viewportRef={scrollAreaViewportRef}>
         <div className="space-y-4">
           {messages.map((msg) => (
             <ChatMessage
@@ -137,7 +152,8 @@ export function ChatInterface({
               onStopSpeak={isSupported ? handleStopSpeak : undefined}
               isSpeaking={isSpeaking}
               isCurrentSpeakingMessage={speakingMessageId === msg.id}
-              onSaveChat={onSaveChatMessage} // Pass down the save handler
+              onSaveChat={onSaveChatMessage}
+              onDeleteMessage={msg.role === 'assistant' ? handleDeleteSingleMessageInternal : undefined} // Only allow deleting assistant messages
             />
           ))}
           {isLoading && messages.length > 0 && messages[messages.length-1].role === 'user' && (

@@ -2,7 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Bot, User, Volume2, StopCircle, Download } from "lucide-react"; // Added Download icon
+import { Bot, User, Volume2, StopCircle, Download, Trash2 } from "lucide-react"; // Added Trash2 icon
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CodeBlock } from "./code-block";
@@ -20,10 +20,19 @@ interface ChatMessageProps {
   onStopSpeak?: () => void;
   isSpeaking?: boolean;
   isCurrentSpeakingMessage?: boolean;
-  onSaveChat?: (messageContent: string) => void; // New prop for saving chat
+  onSaveChat?: (messageContent: string) => void;
+  onDeleteMessage?: (messageId: string) => void; // New prop for deleting a single message
 }
 
-export function ChatMessage({ message, onSpeak, onStopSpeak, isSpeaking, isCurrentSpeakingMessage, onSaveChat }: ChatMessageProps) {
+export function ChatMessage({ 
+  message, 
+  onSpeak, 
+  onStopSpeak, 
+  isSpeaking, 
+  isCurrentSpeakingMessage, 
+  onSaveChat,
+  onDeleteMessage 
+}: ChatMessageProps) {
   const isUser = message.role === "user";
   const isBot = message.role === "assistant";
 
@@ -66,8 +75,8 @@ export function ChatMessage({ message, onSpeak, onStopSpeak, isSpeaking, isCurre
         >
           {message.content}
         </ReactMarkdown>
-        {isBot && (onSpeak || onSaveChat) && (
-          <div className="mt-2 flex items-center gap-2">
+        {isBot && (onSpeak || onSaveChat || onDeleteMessage) && (
+          <div className="mt-2 flex items-center gap-1 flex-wrap">
             {onSpeak && onStopSpeak && (
               <>
                 {isCurrentSpeakingMessage && isSpeaking ? (
@@ -84,6 +93,11 @@ export function ChatMessage({ message, onSpeak, onStopSpeak, isSpeaking, isCurre
             {onSaveChat && (
               <Button variant="ghost" size="sm" onClick={() => onSaveChat(message.content)} className="h-7 text-xs px-2 py-1">
                 <Download className="mr-1 h-4 w-4" /> Save
+              </Button>
+            )}
+            {onDeleteMessage && (
+              <Button variant="ghost" size="sm" onClick={() => onDeleteMessage(message.id)} className="h-7 text-xs px-2 py-1 text-destructive hover:text-destructive">
+                <Trash2 className="mr-1 h-4 w-4" /> Delete
               </Button>
             )}
           </div>
