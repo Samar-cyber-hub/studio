@@ -19,8 +19,14 @@ const SmartChatInputSchema = z.object({
 });
 export type SmartChatInput = z.infer<typeof SmartChatInputSchema>;
 
-const SmartChatOutputSchema = z.object({
+// AI will only output its direct response. The flow will construct the history.
+const SmartChatInternalOutputSchema = z.object({
   chatbotResponse: z.string().describe('The chatbot response message. This will be humorous and colloquial for general chat, or serious and professional for writing tasks.'),
+});
+
+// The flow's output will include the updated history constructed by the flow itself.
+const SmartChatOutputSchema = z.object({
+  chatbotResponse: z.string().describe('The chatbot response message.'),
   updatedChatHistory: z.string().describe('The updated chat history string including the latest user input and AI response, maintaining the turn-based format.'),
 });
 export type SmartChatOutput = z.infer<typeof SmartChatOutputSchema>;
@@ -32,7 +38,7 @@ export async function smartChat(input: SmartChatInput): Promise<SmartChatOutput>
 const smartChatPrompt = ai.definePrompt({
   name: 'smartChatPrompt',
   input: {schema: SmartChatInputSchema},
-  output: {schema: SmartChatOutputSchema},
+  output: {schema: SmartChatInternalOutputSchema}, // AI only needs to return its response
   prompt: `You are a versatile AI assistant.
 
   Your DEFAULT PERSONA is a humorous and friendly AI chatbot, like a witty friend from India.
@@ -72,24 +78,16 @@ const smartChatPrompt = ai.definePrompt({
   3. If YES (for writing task), generate a "chatbotResponse" in a SERIOUS and PROFESSIONAL manner, fulfilling the writing task comprehensively.
   4. If NO (and not a creator/creator's friends question), generate a "chatbotResponse" in your DEFAULT humorous, friendly Indian colloquial style, including emojis. This response MUST be friendly, polite, and humorous.
   5. In all cases, ensure your response is completely free of any abusive or offensive language.
-  6. Construct an "updatedChatHistory" by appending the current "User Input" and your "chatbotResponse" to the provided "Chat History".
-     The format for new entries in updatedChatHistory should be:
-     User: {{{userInput}}}
-     AI: [Your generated chatbotResponse here]
-     Ensure this new interaction is appended to the existing {{{chatHistory}}} content. If chatHistory was empty, updatedChatHistory will start with "User: ..." followed by "AI: ...".
 
-  Format your entire output strictly as a JSON object with two keys: "chatbotResponse" and "updatedChatHistory".
+  Format your entire output strictly as a JSON object with ONE key: "chatbotResponse".
   Example of the JSON output structure (for humorous response):
   {
-    "chatbotResponse": "Your witty and context-aware reply here, with emojis!",
-    "updatedChatHistory": "{{{chatHistory}}}\\nUser: {{{userInput}}}\\nAI: Your witty and context-aware reply here, with emojis!"
+    "chatbotResponse": "Your witty and context-aware reply here, with emojis!"
   }
   Example of the JSON output structure (for serious writing task):
   {
-    "chatbotResponse": "Here is the [story/essay/etc.] you requested: [Detailed content of the writing task].",
-    "updatedChatHistory": "{{{chatHistory}}}\\nUser: {{{userInput}}}\\nAI: Here is the [story/essay/etc.] you requested: [Detailed content of the writing task]."
+    "chatbotResponse": "Here is the [story/essay/etc.] you requested: [Detailed content of the writing task]."
   }
-  (If chatHistory was empty, the example updatedChatHistory would be: "User: {{{userInput}}}\\nAI: [Your response here]")
   `,
 });
 
@@ -97,39 +95,39 @@ const smartChatFlow = ai.defineFlow(
   {
     name: 'smartChatFlow',
     inputSchema: SmartChatInputSchema,
-    outputSchema: SmartChatOutputSchema,
+    outputSchema: SmartChatOutputSchema, // Flow's output schema includes the history
   },
-  async (input: SmartChatInput) => {
-    // Ensure chatHistory is not empty before adding a newline, to prevent leading newline in prompt.
+  async (input: SmartChatInput): Promise<SmartChatOutput> => {
     const promptInput = {
       ...input,
-      chatHistory: input.chatHistory || "" // Pass empty string if null/undefined
+      chatHistory: input.chatHistory || ""
     };
-    const {output} = await smartChatPrompt(promptInput);
+    const {output: aiResponse} = await smartChatPrompt(promptInput);
     
-    if (!output) {
-      console.error('smartChatPrompt returned null or undefined output.');
-      // Provide a neutral fallback if the AI doesn't produce output
-      const fallbackResponse = "Hmm, I am not sure how to respond to that. 🤔 Maybe try again?";
-      const fallbackHistory = `${input.chatHistory || ""}\nUser: ${input.userInput}\nAI: ${fallbackResponse}`.trim();
-      return {
-        chatbotResponse: fallbackResponse,
-        updatedChatHistory: fallbackHistory,
-      };
+    let chatbotResponseContent: string;
+
+    if (!aiResponse || !aiResponse.chatbotResponse) {
+      console.error('smartChatPrompt returned null or undefined chatbotResponse.');
+      chatbotResponseContent = "Hmm, I am not sure how to respond to that. 🤔 Maybe try again?";
+    } else {
+      chatbotResponseContent = aiResponse.chatbotResponse;
     }
     
-    // Ensure updatedChatHistory is correctly formed, especially if original history was empty.
     let updatedHistory = "";
+    const userTurn = `User: ${input.userInput}`;
+    const aiTurn = `AI: ${chatbotResponseContent}`;
+
     if (input.chatHistory && input.chatHistory.trim() !== "") {
-      updatedHistory = `${input.chatHistory}\nUser: ${input.userInput}\nAI: ${output.chatbotResponse}`;
+      updatedHistory = `${input.chatHistory}\n${userTurn}\n${aiTurn}`;
     } else {
-      updatedHistory = `User: ${input.userInput}\nAI: ${output.chatbotResponse}`;
+      updatedHistory = `${userTurn}\n${aiTurn}`;
     }
     
     return {
-        chatbotResponse: output.chatbotResponse,
-        updatedChatHistory: updatedHistory.trim() // Ensure no leading/trailing newlines from logic
+        chatbotResponse: chatbotResponseContent,
+        updatedChatHistory: updatedHistory.trim()
     };
   }
 );
 
+    
