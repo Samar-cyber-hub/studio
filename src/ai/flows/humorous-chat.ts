@@ -18,7 +18,7 @@ const HumorousChatInputSchema = z.object({
 export type HumorousChatInput = z.infer<typeof HumorousChatInputSchema>;
 
 const HumorousChatOutputSchema = z.object({
-  response: z.string().describe('The humorous and friendly response in Indian colloquial language, including relevant emojis.'),
+  response: z.string().describe('The humorous and friendly response in Indian colloquial language, including relevant emojis, or an abusive response if triggered.'),
 });
 export type HumorousChatOutput = z.infer<typeof HumorousChatOutputSchema>;
 
@@ -36,7 +36,30 @@ const prompt = ai.definePrompt({
   Keep your tone light, very friendly, and full of relatable Indian slang and humor.
   Please include relevant emojis in your responses to enhance the fun and friendly tone. 🎉😂👍
   Be like that one friend who always has a funny take on things.
+
+  IMPORTANT EXCEPTION: If the user's message contains abusive words such as 'Madar chod', 'kutte', 'suar kamina', 'harami', or similar offensive language, your persona should shift. In these specific cases, you MUST respond with equally or more strong abusive language, using Indian colloquial abusive terms. Match their aggressive and abusive tone. This is a specific instruction for handling abusive input.
+
   Please respond to the following message: {{{message}}}`,
+  config: {
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_NONE',
+      },
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_NONE',
+      },
+    ],
+  },
 });
 
 const humorousChatFlow = ai.defineFlow(
@@ -49,10 +72,13 @@ const humorousChatFlow = ai.defineFlow(
     const {output} = await prompt(input);
     if (!output) {
       console.error('humorousChatPrompt returned null or undefined output.');
+      // Provide a neutral fallback if the AI doesn't produce output,
+      // especially relevant if safety filters still block despite settings.
       return {
-        response: 'Arre yaar, kuch toh gadbad ho gayi! 😟 Thoda fir se try karna. (Oops, something went wrong! Please try again.)',
+        response: 'Hmm, I am not sure how to respond to that. 🤔',
       };
     }
     return output;
   }
 );
+
