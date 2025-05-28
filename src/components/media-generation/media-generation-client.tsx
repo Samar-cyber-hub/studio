@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -76,7 +77,7 @@ export function MediaGenerationClient() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Generate AI Media</CardTitle>
+          <CardTitle>Generate AI Media 🎨🖼🖌</CardTitle>
         </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
