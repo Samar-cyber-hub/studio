@@ -8,34 +8,33 @@ import type { Message } from "@/components/common/chat-message";
 import { useState, useEffect } from "react";
 
 export function SmartChatClient() {
-  const [chatHistory, setChatHistory] = useState<Message[]>([]);
+  // chatHistory state is managed by ChatInterface when chatHistoryEnabled is true
+  // We only need to provide the initial messages.
+
+  const initialBotMessage: Message = {
+    id: "initial-bot-smart",
+    role: "assistant",
+    content: "Namaste! yaar? Kya haal chaal hai 👋 aur! sab badhiya hai ghar mein aur aaj ka din kaisa hai 😊",
+    createdAt: new Date()
+  };
 
   const getFormattedHistoryForAI = (currentMessages: Message[]): string => {
+    // Remove the initial bot message if it's the only one, as the AI prompt doesn't need it as "history" for the first user turn.
+    // Or, more simply, let the smartChatFlow handle an empty history string if currentMessages only contains the initial greeting.
+    // For now, we'll pass the history as is, and the smartChatFlow prompt is designed to handle empty or greeting-only history.
     return currentMessages
       .map((msg) => `${msg.role === "user" ? "User" : "AI"}: ${msg.content}`)
       .join("\\n");
   };
   
-  useEffect(() => {
-    // Set initial message for the smart chat
-    setChatHistory([{
-      id: "initial-bot-smart",
-      role: "assistant",
-      content: "Namaste! yaar? Kya haal chaal hai 👋 aur! sab badhiya hai ghar mein aur aaj ka din kaisa hai 😊",
-      createdAt: new Date()
-    }]);
-  }, []);
-
   const handleSendMessage = async (userInput: string, currentMessagesFromChatInterface?: Message[]) => {
-    const messagesToProcess = currentMessagesFromChatInterface || chatHistory;
-    const currentHistoryString = getFormattedHistoryForAI(messagesToProcess);
+    // currentMessagesFromChatInterface will contain all messages currently in ChatInterface, including user's new input.
+    // We need the history *before* the current userInput for the AI.
+    const historyForAI = currentMessagesFromChatInterface 
+        ? currentMessagesFromChatInterface.slice(0, -1) // All messages except the last one (current user input)
+        : []; 
 
-    const userMessageForUI: Message = {
-      id: Date.now().toString() + "-user",
-      role: "user",
-      content: userInput,
-      createdAt: new Date(),
-    };
+    const currentHistoryString = getFormattedHistoryForAI(historyForAI);
 
     try {
       const input: SmartChatInput = { 
@@ -44,7 +43,15 @@ export function SmartChatClient() {
       };
       const output = await smartChat(input);
 
-      const botMessageForUI: Message = {
+      // The ChatInterface component will add the user's message and this bot response to its internal state.
+      // We need to return the bot's response content and the *complete* new history array
+      // that ChatInterface should adopt if chatHistoryEnabled is true.
+
+      const userMessageForHistory: Message = currentMessagesFromChatInterface 
+        ? currentMessagesFromChatInterface[currentMessagesFromChatInterface.length - 1] 
+        : { id: Date.now().toString() + "-user-fallback", role: "user", content: userInput, createdAt: new Date()};
+      
+      const botMessageForHistory: Message = {
         id: Date.now().toString() + "-bot",
         role: "assistant",
         content: output.chatbotResponse,
@@ -52,17 +59,14 @@ export function SmartChatClient() {
       };
       
       const newFullHistoryArray: Message[] = [
-        ...messagesToProcess,
-        userMessageForUI, // User message gets added by ChatInterface, but for our state:
-        botMessageForUI
+        ...historyForAI,
+        userMessageForHistory, 
+        botMessageForHistory
       ];
-      // We are passing history back to ChatInterface, so we don't need to setChatHistory here manually
-      // setChatHistory(newFullHistoryArray); 
-      // ChatInterface will manage its internal state based on the returned history.
 
       return { 
         response: output.chatbotResponse,
-        history: newFullHistoryArray // Provide the full updated history to ChatInterface
+        history: newFullHistoryArray 
       };
 
     } catch (error) {
@@ -72,7 +76,11 @@ export function SmartChatClient() {
         description: "Failed to get a response. Please try again.",
         variant: "destructive",
       });
-      // Return the original user input and an error message to ChatInterface
+      
+      const userMessageForHistoryOnError: Message = currentMessagesFromChatInterface 
+        ? currentMessagesFromChatInterface[currentMessagesFromChatInterface.length - 1]
+        : { id: Date.now().toString() + "-user-fallback-err", role: "user", content: userInput, createdAt: new Date()};
+
        const errorBotMessage: Message = {
         id: Date.now().toString() + "-bot-error",
         role: "assistant",
@@ -80,8 +88,8 @@ export function SmartChatClient() {
         createdAt: new Date(),
       };
        const historyOnError: Message[] = [
-        ...messagesToProcess,
-        userMessageForUI,
+        ...historyForAI,
+        userMessageForHistoryOnError,
         errorBotMessage,
       ];
       return { 
@@ -94,7 +102,7 @@ export function SmartChatClient() {
   return (
     <ChatInterface
       sendMessage={handleSendMessage}
-      initialMessages={chatHistory} 
+      initialMessages={[initialBotMessage]} 
       placeholder="Ask me anything, yaar!"
       chatHistoryEnabled={true} 
     />
