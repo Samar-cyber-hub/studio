@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   BotMessageSquare,
   CodeXml,
-  // ImageIcon, // Removed as Media Generation tool is deleted
+  ImageIcon, // Added ImageIcon
   Share2,
   Sparkles,
 } from "lucide-react";
@@ -29,8 +29,8 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/smart-chat", label: "Smart Fun Chat", icon: BotMessageSquare },
+  { href: "/image-generation", label: "Image Generation", icon: ImageIcon }, // New Image Generation tool
   { href: "/code-generation", label: "Code Generation", icon: CodeXml },
-  // { href: "/media-generation", label: "Media Generation", icon: ImageIcon }, // Removed
   { href: "/social-media-optimization", label: "Social Media Tools", icon: Share2 },
 ];
 
