@@ -60,7 +60,7 @@ export function CodeGenerationClient() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Write prompt for code Generation &gt;&gt; {'{ *_* }'} &lt;&lt;
+            Write prompt for code Generation{"{ *_* }"}🖥👨‍💻
           </CardTitle>
         </CardHeader>
         <Form {...form}>
