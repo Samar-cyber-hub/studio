@@ -82,10 +82,9 @@ export function MediaGenerationClient() {
 
   const selectedMediaType = form.watch("mediaType");
 
-  const isImageGenerated = generatedMedia?.mediaUrl?.startsWith("data:image/");
-  const isUnsupportedType = generatedMedia?.mediaUrl?.startsWith("Unsupported");
-  const isErrorResponse = generatedMedia?.mediaUrl?.startsWith("Error:"); // Added semicolon here
-
+  const isImageGenerated = generatedMedia && generatedMedia.mediaUrl ? generatedMedia.mediaUrl.startsWith("data:image/") : false;
+  const isUnsupportedType = generatedMedia && generatedMedia.mediaUrl ? generatedMedia.mediaUrl.startsWith("Unsupported") : false;
+  const isErrorResponse = generatedMedia && generatedMedia.mediaUrl ? generatedMedia.mediaUrl.startsWith("Error:") : false;
 
   return (
     <div className="space-y-6">
@@ -166,11 +165,11 @@ export function MediaGenerationClient() {
           </CardHeader>
           <CardContent className="flex flex-col items-center">
             <div className="relative w-full max-w-md aspect-square rounded-lg overflow-hidden border shadow-lg">
-              <Image 
-                src={generatedMedia!.mediaUrl!} 
-                alt="Generated AI Media" 
-                layout="fill" 
-                objectFit="contain" 
+              <Image
+                src={generatedMedia!.mediaUrl!}
+                alt="Generated AI Media"
+                layout="fill"
+                objectFit="contain"
                 data-ai-hint="abstract digital art"
               />
             </div>
