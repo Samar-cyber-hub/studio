@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,16 +60,7 @@ export function CodeGenerationClient() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <div className="flex items-center gap-2">
-              <span>Write your prompt for code Generation &gt;&gt;{ "{ *_* }" }&lt;&lt;</span>
-              <Image
-                src="https://placehold.co/40x40.png"
-                alt="AI Coder Robot"
-                width={40}
-                height={40}
-                data-ai-hint="AI robot"
-              />
-            </div>
+            Write prompt for code Generation &gt;&gt; {'{ *_* }'} &lt;&lt;
           </CardTitle>
         </CardHeader>
         <Form {...form}>
