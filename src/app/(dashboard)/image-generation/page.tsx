@@ -11,7 +11,7 @@ export default function ImageGenerationPage() {
   return (
     <>
       <PageHeader
-        title="AI Image Generation"
+        title="AI Image Generation🖌🎨🖼"
         description="Create stunning images from your text prompts. Describe what you want to see!"
         icon={ImageIcon}
       />
