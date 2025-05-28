@@ -1,3 +1,4 @@
+
 // Use server directive is required for all Genkit flows.
 'use server';
 
@@ -27,7 +28,7 @@ const SocialMediaOutputSchema = z.object({
   hashtags: z.array(z.string()).describe('Popular hashtags to increase visibility.'),
   videoTitles: z.array(z.string()).describe('Engaging video titles.'),
   seoDescription: z.string().describe('SEO-optimized description for the content.'),
-  thumbnailPrompt: z.string().describe('A prompt for generating a thumbnail image.'),
+  thumbnailPrompt: z.string().describe('A detailed prompt for an AI image generation model to create a high-quality, SEO-friendly, catching, and hooked thumbnail.'),
 });
 export type SocialMediaOutput = z.infer<typeof SocialMediaOutputSchema>;
 
@@ -41,13 +42,15 @@ const prompt = ai.definePrompt({
   name: 'socialMediaOptimizationPrompt',
   input: {schema: SocialMediaInputSchema},
   output: {schema: SocialMediaOutputSchema},
-  prompt: `You are a social media expert. Your goal is to provide optimized content suggestions.
+  prompt: `You are a social media expert and a creative visual strategist. Your goal is to provide highly optimized content suggestions.
 
   Platform: {{{platform}}}
   Topic: {{{topic}}}
   Keywords: {{{keywords}}}
 
-  Suggest trending topics, tags, hashtags, video titles, and an SEO description to maximize visibility and engagement for the given topic on the specified platform. Also, generate a prompt for a thumbnail image that includes popular memes and GIFs.
+  Suggest trending topics, relevant tags, popular hashtags, engaging video titles, and an SEO-optimized description to maximize visibility and engagement for the given topic on the specified platform.
+
+  Additionally, provide a detailed and highly descriptive prompt suitable for an AI image generation model to create a visually stunning, high-quality, SEO-friendly, and click-invicing thumbnail. This thumbnail prompt should be crafted to maximize click-through rates. It should consider visual elements that are trendy, attention-grabbing, and directly relevant to the topic, keywords, and platform. The prompt should clearly articulate the desired style (e.g., vibrant, minimalist, realistic, cartoonish), composition, key subjects, background, color palette, and any text overlays (keep text concise and impactful, if appropriate for a thumbnail). If applicable, suggest incorporating popular visual motifs, relevant emojis, or meme elements if they align with the content's tone and target audience to make the thumbnail "hooked" and "catching". The prompt should be specific enough for an advanced image generation AI to produce a compelling and effective visual.
 
   Format your response as a JSON object.
   `,
@@ -75,3 +78,4 @@ const suggestSocialMediaContentFlow = ai.defineFlow(
     return output;
   }
 );
+
