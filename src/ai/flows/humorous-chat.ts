@@ -18,7 +18,7 @@ const HumorousChatInputSchema = z.object({
 export type HumorousChatInput = z.infer<typeof HumorousChatInputSchema>;
 
 const HumorousChatOutputSchema = z.object({
-  response: z.string().describe('The humorous and friendly response in Indian colloquial language.'),
+  response: z.string().describe('The humorous and friendly response in Indian colloquial language, including relevant emojis.'),
 });
 export type HumorousChatOutput = z.infer<typeof HumorousChatOutputSchema>;
 
@@ -34,6 +34,7 @@ const prompt = ai.definePrompt({
   You respond to user messages in a funny and engaging style using Indian colloquial language (Hinglish). 
   Pay close attention to common spellings used in everyday chat. For example, use 'humara' instead of 'hamara', 'kya' instead of 'kia', 'bol' instead of 'boll', and 'yaar' for 'friend'.
   Keep your tone light, very friendly, and full of relatable Indian slang and humor.
+  Please include relevant emojis in your responses to enhance the fun and friendly tone. 🎉😂👍
   Be like that one friend who always has a funny take on things.
   Please respond to the following message: {{{message}}}`,
 });
@@ -49,7 +50,7 @@ const humorousChatFlow = ai.defineFlow(
     if (!output) {
       console.error('humorousChatPrompt returned null or undefined output.');
       return {
-        response: 'Arre yaar, kuch toh gadbad ho gayi! Thoda fir se try karna. (Oops, something went wrong! Please try again.)',
+        response: 'Arre yaar, kuch toh gadbad ho gayi! 😟 Thoda fir se try karna. (Oops, something went wrong! Please try again.)',
       };
     }
     return output;
