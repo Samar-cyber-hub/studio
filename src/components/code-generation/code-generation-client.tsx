@@ -62,12 +62,13 @@ export function CodeGenerationClient() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <span>Write your prompt for code Generation {"{*{_*}*}"}</span>
+              <span>Write your prompt for code Generation &gt;&gt;{ "{ *_* }" }&lt;&lt;</span>
               <Image
                 src="https://placehold.co/40x40.png"
                 alt="AI Coder Robot"
                 width={40}
                 height={40}
+                data-ai-hint="AI robot"
               />
             </div>
           </CardTitle>
