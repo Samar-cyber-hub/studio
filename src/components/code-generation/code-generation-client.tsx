@@ -62,7 +62,7 @@ export function CodeGenerationClient() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <span>Request Code Snippet</span>
+              <span>Write your prompt for code Generation {"{*{_*}*}"}</span>
               <Image
                 src="https://placehold.co/40x40.png"
                 alt="AI Coder Robot"
