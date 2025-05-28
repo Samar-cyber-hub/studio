@@ -15,18 +15,17 @@ export function SmartChatClient() {
     createdAt: new Date()
   };
 
-  // SmartChatClient will manage the source of truth for initialMessages for ChatInterface
   const [currentInitialMessages, setCurrentInitialMessages] = useState<Message[]>([initialBotMessage]);
 
-  // This effect ensures ChatInterface is re-initialized with the correct initial messages
-  // if they are reset (e.g. after a clear chat operation).
   useEffect(() => {
-    setCurrentInitialMessages([initialBotMessage]);
-  }, []);
+    // This ensures ChatInterface is re-initialized with the correct initial messages
+    // if they are reset (e.g. after a clear chat operation).
+    // No action needed here if initialBotMessage is static, but if it could change,
+    // this effect would re-set currentInitialMessages.
+  }, [initialBotMessage]); // Dependency array ensures this runs if initialBotMessage definition changes.
 
 
   const getFormattedHistoryForAI = (currentMessages: Message[]): string => {
-    // Filter out the initial bot message if it's the only "history" before user input
     const relevantMessages = currentMessages.filter(msg => msg.id !== initialBotMessage.id || currentMessages.length > 1);
     return relevantMessages
       .map((msg) => `${msg.role === "user" ? "User" : "AI"}: ${msg.content}`)
@@ -34,10 +33,8 @@ export function SmartChatClient() {
   };
   
   const handleSendMessage = async (userInput: string, currentMessagesFromChatInterface?: Message[]) => {
-    // `currentMessagesFromChatInterface` from ChatInterface already includes the latest user message.
-    // We need the history *before* this latest user message for the AI.
     const historyForAIInput = currentMessagesFromChatInterface 
-        ? currentMessagesFromChatInterface.slice(0, -1) // Exclude the last message (current user input)
+        ? currentMessagesFromChatInterface.slice(0, -1) 
         : []; 
 
     const currentHistoryString = getFormattedHistoryForAI(historyForAIInput);
@@ -48,9 +45,7 @@ export function SmartChatClient() {
         chatHistory: currentHistoryString 
       };
       const output = await smartChat(input);
-
-      // Construct the full history array as expected by ChatInterface for an update
-      // This will include: previous history, the user's message, and the bot's new response.
+      
       const userMessageForHistory: Message = currentMessagesFromChatInterface && currentMessagesFromChatInterface.length > 0
         ? currentMessagesFromChatInterface[currentMessagesFromChatInterface.length - 1] 
         : { id: Date.now().toString() + "-user-fallback", role: "user", content: userInput, createdAt: new Date()};
@@ -69,8 +64,8 @@ export function SmartChatClient() {
       ];
 
       return { 
-        response: output.chatbotResponse, // Only the new bot response content
-        history: newFullHistoryArray      // The complete, updated history array
+        response: output.chatbotResponse,
+        history: newFullHistoryArray
       };
 
     } catch (error) {
@@ -81,7 +76,6 @@ export function SmartChatClient() {
         variant: "destructive",
       });
       
-      // Construct history for error case
       const userMessageForHistoryOnError: Message = currentMessagesFromChatInterface && currentMessagesFromChatInterface.length > 0
         ? currentMessagesFromChatInterface[currentMessagesFromChatInterface.length - 1]
         : { id: Date.now().toString() + "-user-fallback-err", role: "user", content: userInput, createdAt: new Date()};
@@ -105,8 +99,6 @@ export function SmartChatClient() {
   };
 
   const handleChatClear = () => {
-    // When chat is cleared, ChatInterface needs to be re-rendered with the *new* initial messages.
-    // Updating currentInitialMessages will trigger a re-render of ChatInterface with the fresh initial state.
     setCurrentInitialMessages([initialBotMessage]); 
   };
 
@@ -116,18 +108,15 @@ export function SmartChatClient() {
       title: "Chat Snippet Saved!",
       description: "The chat message has been copied to the console (simulation).", 
     });
-    // To actually copy to clipboard:
-    // navigator.clipboard.writeText(messageContent).then(() => {
-    //   toast({ title: "Copied to clipboard!" });
-    // }).catch(err => {
-    //   toast({ title: "Failed to copy", variant: "destructive" });
-    // });
+  };
+
+  const handleViewSavedChats = () => {
+    toast({
+      title: "Coming Soon!",
+      description: "The feature to view your saved chats is under development.",
+    });
   };
   
-  // The ChatInterface will handle its own state for deleting single messages.
-  // SmartChatClient doesn't need a specific handler passed to ChatInterface for this,
-  // as ChatInterface will update its internal `messages` state which is then used for `sendMessage`.
-
   return (
     <ChatInterface
       sendMessage={handleSendMessage}
@@ -136,9 +125,7 @@ export function SmartChatClient() {
       chatHistoryEnabled={true} 
       onClearChat={handleChatClear}
       onSaveChatMessage={handleSaveChatMessage}
-      // onDeleteSingleMessage can be omitted here if ChatInterface handles its own state
-      // or passed if SmartChatClient needs to be aware of single message deletions for other reasons.
-      // For now, ChatInterface manages its own list.
+      onViewSavedChats={handleViewSavedChats} // Pass the new handler
     />
   );
 }

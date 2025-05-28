@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Paperclip, Send, Mic, Loader2, Trash2 } from "lucide-react";
+import { Paperclip, Send, Mic, Loader2, Trash2, Bookmark } from "lucide-react";
 import { useSpeechSynthesis } from "@/hooks/use-speech-synthesis";
 import { ChatMessage, type Message } from "./chat-message";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,8 @@ interface ChatInterfaceProps {
   chatHistoryEnabled?: boolean;
   onClearChat?: () => void;
   onSaveChatMessage?: (messageContent: string) => void;
-  onDeleteSingleMessage?: (messageId: string) => void; // New prop for deleting single message
+  onDeleteSingleMessage?: (messageId: string) => void;
+  onViewSavedChats?: () => void; // New prop for viewing saved chats
 }
 
 export function ChatInterface({
@@ -27,7 +28,8 @@ export function ChatInterface({
   chatHistoryEnabled = false,
   onClearChat,
   onSaveChatMessage,
-  onDeleteSingleMessage, // Destructure new prop
+  onDeleteSingleMessage,
+  onViewSavedChats, // Destructure new prop
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -153,7 +155,7 @@ export function ChatInterface({
               isSpeaking={isSpeaking}
               isCurrentSpeakingMessage={speakingMessageId === msg.id}
               onSaveChat={onSaveChatMessage}
-              onDeleteMessage={msg.role === 'assistant' ? handleDeleteSingleMessageInternal : undefined} // Only allow deleting assistant messages
+              onDeleteMessage={msg.role === 'assistant' ? handleDeleteSingleMessageInternal : undefined}
             />
           ))}
           {isLoading && messages.length > 0 && messages[messages.length-1].role === 'user' && (
@@ -199,6 +201,20 @@ export function ChatInterface({
             >
               <Trash2 className="h-5 w-5" />
               <span className="sr-only">Clear Chat</span>
+            </Button>
+          )}
+          {onViewSavedChats && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onViewSavedChats}
+              className="text-muted-foreground hover:text-primary"
+              aria-label="View saved chats"
+              disabled={isLoading}
+            >
+              <Bookmark className="h-5 w-5" />
+              <span className="sr-only">View Saved Chats</span>
             </Button>
           )}
         </form>
