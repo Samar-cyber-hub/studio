@@ -28,7 +28,7 @@ const SocialMediaOutputSchema = z.object({
   hashtags: z.array(z.string()).describe('Popular hashtags to increase visibility on the specified platform.'),
   videoTitles: z.array(z.string()).describe('Engaging video titles, suitable for the specified platform.'),
   seoDescription: z.string().describe('SEO-optimized description for the content, tailored for the specified platform.'),
-  thumbnailPrompt: z.string().describe('A detailed prompt for an AI image generation model to create a high-quality, SEO-friendly, catching, and hooked thumbnail, considering the aesthetics of the specified platform. It should include styles like animated, 3D, 2D, trolled (humorous/meme-like) if appropriate.'),
+  thumbnailPrompt: z.string().describe('A detailed prompt for an AI image generation model to create a high-quality, SEO-friendly, catching, and hooked thumbnail. This prompt should include suggestions for visual elements, styles (like animated, 3D, 2D, trolled), and concise, impactful text overlays, considering the aesthetics of the specified platform.'),
 });
 export type SocialMediaOutput = z.infer<typeof SocialMediaOutputSchema>;
 
@@ -55,12 +55,13 @@ const prompt = ai.definePrompt({
   4. Engaging Video Titles: Create a few engaging video titles optimized for discovery and click-through on {{{platform}}}.
   5. SEO-Optimized Description: Write an SEO-optimized description for the content, suitable for the typical character limits and style of {{{platform}}}.
 
-  Additionally, provide a detailed and highly descriptive prompt suitable for an AI image generation model to create a visually stunning, high-quality, SEO-friendly, and click-inviting thumbnail. This thumbnail prompt should be crafted to maximize click-through rates.
-  Consider these styles in your thumbnail prompt if appropriate for the topic and platform: animated, 3D model, 2D illustration, "trolled" (humorous/meme-like if suitable and tastefully done), realistic, vibrant, minimalist, cartoonish. Ensure the suggested style aligns with the platform's typical audience and content.
-  The prompt should detail visual elements that are trendy, attention-grabbing, and directly relevant to the topic, keywords, and the typical aesthetic of {{{platform}}}.
-  Clearly articulate the desired composition, key subjects, background, color palette, and any text overlays (keep text concise and impactful).
-  If applicable, suggest incorporating popular visual motifs, relevant emojis, or meme elements if they align with the content's tone and target audience on {{{platform}}} to make the thumbnail "hooked" and "catching".
-  The thumbnail prompt must be specific enough for an advanced image generation AI to produce a compelling and effective visual.
+  Additionally, provide a detailed and highly descriptive prompt suitable for an AI image generation model to create a visually stunning, high-quality, SEO-friendly, and click-inviting thumbnail. This thumbnail prompt is crucial and must be crafted to maximize click-through rates.
+  The thumbnail prompt should include:
+  - Visual Elements: Describe the desired composition, key subjects, background, and color palette. These elements should be trendy, attention-grabbing, and directly relevant to the topic, keywords, and the typical aesthetic of {{{platform}}}.
+  - Style Suggestions: Consider styles like animated, 3D model, 2D illustration, "trolled" (humorous/meme-like if suitable and tastefully done), realistic, vibrant, minimalist, cartoonish. Ensure the suggested style aligns with the platform's typical audience and content.
+  - Text Overlay Suggestions: Crucially, suggest concise, impactful, and "best text" for overlays on the thumbnail. This text should be catchy and designed to hook the viewer.
+  - Hook Elements: If applicable, suggest incorporating popular visual motifs, relevant emojis, or meme elements if they align with the content's tone and target audience on {{{platform}}} to make the thumbnail "hooked" and "catching".
+  The overall thumbnail prompt must be specific enough for an advanced image generation AI to produce a compelling and effective visual with clear text.
 
   Format your response as a JSON object.
   `,
