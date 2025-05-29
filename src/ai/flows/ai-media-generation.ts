@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview AI media generation flow.
+ * @fileOverview AI media generation flow, primarily for thumbnails.
  *
  * - generateMedia - A function that generates media based on a prompt and type.
  * - GenerateMediaInput - The input type for the generateMedia function.
@@ -10,11 +10,10 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-// These schemas are NOT exported due to 'use server' constraints.
-// They are defined here for type safety within this file.
+// Schemas are internal to this file due to 'use server' constraints on exports.
 const GenerateMediaInputSchemaInternal = z.object({
   prompt: z.string().describe('The prompt for media generation.'),
-  mediaType: z.string().describe('The type of media to generate (e.g., "image", "video", "3d_model"). Only "image" is currently supported.'),
+  mediaType: z.string().describe('The type of media to generate (e.g., "image"). Only "image" is currently supported.'),
 });
 export type GenerateMediaInput = z.infer<typeof GenerateMediaInputSchemaInternal>;
 
@@ -41,10 +40,10 @@ export async function generateMedia(input: GenerateMediaInput): Promise<Generate
 
   try {
     const {media, text} = await ai.generate({
-      model: 'googleai/gemini-2.0-flash-exp', // Specific model for image generation
+      model: 'googleai/gemini-2.0-flash-exp', 
       prompt: input.prompt,
       config: {
-        responseModalities: ['TEXT', 'IMAGE'], // Gemini image generation often requires both
+        responseModalities: ['TEXT', 'IMAGE'], 
       },
     });
 
@@ -53,24 +52,26 @@ export async function generateMedia(input: GenerateMediaInput): Promise<Generate
     } else {
       console.error('Image generation (generateMedia) did not return a media URL. Text response (if any):', text);
       return {
-        mediaUrl: 'Error: Image generation succeeded but no image URL was returned. ' + (text || 'No additional text response.'),
+        mediaUrl: 'Error: Image generation succeeded but no image URL was returned. ' + (text || 'No additional text response provided by model.'),
         status: 'error_no_url',
       };
     }
   } catch (error: any) {
     console.error('Error during media generation (generateMedia):', error);
-    let detailedErrorMessage = error.message || 'An unexpected error occurred during media generation.';
-    if (error.cause && typeof error.cause === 'string') {
-      detailedErrorMessage += ` Cause: ${error.cause}`;
-    } else if (error.cause && typeof error.cause === 'object' && error.cause.message) {
-      detailedErrorMessage += ` Cause: ${error.cause.message}`;
-    }
-    if (error.message && error.message.includes('Model does not support the requested response modalities')) {
-        detailedErrorMessage = 'The AI model had an issue with the image request modalities. This might be a temporary issue or a configuration problem with the model.';
+    let simpleErrorMessage = 'Thumbnail generation failed. Please try again.';
+    if (error instanceof Error && error.message) {
+        if (error.message.includes('response modalities')) {
+          simpleErrorMessage = 'The AI model had an issue with the image request. Please try a different prompt or style for the thumbnail.';
+        } else if (error.message.includes('SAFETY')) {
+          simpleErrorMessage = 'The thumbnail could not be generated due to safety filters. Please adjust your prompt.';
+        } else if (error.message.length < 150) { 
+          simpleErrorMessage = error.message;
+        }
     }
     return {
-      mediaUrl: `Error: ${detailedErrorMessage}`,
+      mediaUrl: `Error: ${simpleErrorMessage}`,
       status: 'error_exception',
     };
   }
 }
+

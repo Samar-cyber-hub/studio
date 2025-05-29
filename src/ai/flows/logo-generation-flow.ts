@@ -66,16 +66,17 @@ const generateSingleLogo = async (fullPrompt: string): Promise<z.infer<typeof Si
     }
   } catch (error: any) {
     console.error(`Error during single logo generation for prompt "${fullPrompt}":`, error);
-    let detailedErrorMessage = error.message || 'An unexpected error occurred during logo generation.';
-    if (error.cause && typeof error.cause === 'string') {
-      detailedErrorMessage += ` Cause: ${error.cause}`;
-    } else if (error.cause && typeof error.cause === 'object' && error.cause.message) {
-      detailedErrorMessage += ` Cause: ${error.cause.message}`;
+    let simpleErrorMessage = 'Logo generation for this variation failed.';
+    if (error instanceof Error && error.message) {
+      if (error.message.includes('response modalities')) {
+        simpleErrorMessage = 'AI model issue with image request.';
+      } else if (error.message.includes('SAFETY')) {
+          simpleErrorMessage = 'Image generation blocked by safety filters.';
+      } else if (error.message.length < 100) { 
+        simpleErrorMessage = error.message;
+      }
     }
-    if (error.message && error.message.includes('Model does not support the requested response modalities')) {
-        detailedErrorMessage = 'The AI model had an issue with the image request modalities. This might be a temporary issue or a configuration problem with the model.';
-    }
-    return {imageDataUri: null, promptUsed: fullPrompt, errorMessage: detailedErrorMessage};
+    return {imageDataUri: null, promptUsed: fullPrompt, errorMessage: simpleErrorMessage};
   }
 };
 
@@ -95,3 +96,4 @@ const generateLogosFlow = ai.defineFlow(
     return {logos: results};
   }
 );
+

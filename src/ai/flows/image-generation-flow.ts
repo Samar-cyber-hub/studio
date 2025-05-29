@@ -54,23 +54,21 @@ const generateImageFlow = ai.defineFlow(
       }
     } catch (error: any) {
       console.error('Error during image generation flow:', error);
-      // Try to extract a more specific error message if available
-      let detailedErrorMessage = error.message || 'An unexpected error occurred during image generation.';
-      if (error.cause && typeof error.cause === 'string') {
-        detailedErrorMessage += ` Cause: ${error.cause}`;
-      } else if (error.cause && typeof error.cause === 'object' && error.cause.message) {
-        detailedErrorMessage += ` Cause: ${error.cause.message}`;
+      let simpleErrorMessage = 'Image generation failed. Please try again.';
+      if (error instanceof Error && error.message) {
+        if (error.message.includes('response modalities')) {
+          simpleErrorMessage = 'The AI model had an issue with the image request. Please try a different prompt or style.';
+        } else if (error.message.includes('SAFETY')) {
+          simpleErrorMessage = 'The image could not be generated due to safety filters. Please adjust your prompt.';
+        } else if (error.message.length < 150) { // Keep it reasonably short and avoid overly technical details
+          simpleErrorMessage = error.message;
+        }
       }
-
-      // Check for the specific modality error in the message
-      if (error.message && error.message.includes('Model does not support the requested response modalities')) {
-        detailedErrorMessage = 'The AI model had an issue with the image request modalities. This might be a temporary issue or a configuration problem with the model.';
-      }
-      
       return {
         imageDataUri: null,
-        errorMessage: detailedErrorMessage,
+        errorMessage: simpleErrorMessage,
       };
     }
   }
 );
+
