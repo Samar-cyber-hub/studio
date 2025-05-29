@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+// Removed Textarea as it's not used in this component
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -20,8 +20,13 @@ import { generateMedia } from "@/ai/flows/ai-media-generation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const socialMediaPlatforms = ["Instagram", "TikTok", "X (Twitter)", "Facebook", "YouTube", "LinkedIn"];
+const contentTypes = [
+  { label: "Standard Video", value: "standard" },
+  { label: "Shorts/Reels", value: "short_form" },
+];
 
 const formSchema = z.object({
+  contentType: z.string().min(1, { message: "Please select a content type." }),
   platform: z.string().min(1, { message: "Please select a platform." }),
   topic: z.string().min(5, { message: "Topic must be at least 5 characters." }),
   keywords: z.string().min(3, { message: "Please provide some keywords." }),
@@ -38,6 +43,7 @@ export function SocialMediaOptimizationClient() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      contentType: "",
       platform: "",
       topic: "",
       keywords: "",
@@ -140,6 +146,28 @@ export function SocialMediaOptimizationClient() {
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
+                name="contentType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select content type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {contentTypes.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="platform"
                 render={({ field }) => (
                   <FormItem>
@@ -235,8 +263,8 @@ export function SocialMediaOptimizationClient() {
                      </div>
                   )}
                   {thumbnailUrl && !isGeneratingThumbnail && (
-                    <div className="mt-2 relative w-full max-w-xs aspect-video rounded-md overflow-hidden border shadow-md">
-                      <Image src={thumbnailUrl} alt="Generated Thumbnail" layout="fill" objectFit="cover" data-ai-hint="social media thumbnail"/>
+                    <div className="mt-2 relative w-full max-w-xs aspect-video rounded-md overflow-hidden border shadow-md bg-muted">
+                      <Image src={thumbnailUrl} alt="Generated Thumbnail" layout="fill" objectFit="contain" data-ai-hint="social media thumbnail"/>
                     </div>
                   )}
                   {!isGeneratingThumbnail && !thumbnailUrl && (
@@ -268,3 +296,4 @@ export function SocialMediaOptimizationClient() {
     </div>
   );
 }
+
