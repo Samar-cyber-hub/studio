@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { generateLogos, type GenerateLogosInput, type GenerateLogosOutput } from "@/ai/flows/logo-generation-flow";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, AlertTriangle, Sparkles, Download, ImageOff } from "lucide-react";
+import { Loader2, AlertTriangle, Sparkles, Download, ImageOff, RefreshCw, Bookmark } from "lucide-react";
 import NextImage from "next/image";
 
 const formSchema = z.object({
@@ -48,7 +48,6 @@ export function LogoGenerationClient() {
     } catch (error: any) {
       console.error("Logo generation flow error:", error);
       const errorMessage = error.message || "Something went wrong. Please try again.";
-      // setGeneratedLogos an array of errors if the whole flow fails.
       const errorResults = Array(10).fill(null).map((_, i) => ({
         imageDataUri: null,
         promptUsed: `Attempt ${i + 1} for prompt: ${data.basePrompt}`,
@@ -63,6 +62,34 @@ export function LogoGenerationClient() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRegenerate = () => {
+    if (form.getValues("basePrompt").trim() !== "") {
+      form.handleSubmit(onSubmit)();
+    } else {
+      toast({
+        title: "Prompt is empty",
+        description: "Please enter a prompt to regenerate logos.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveLogo = (logoIndex: number) => {
+    toast({
+      title: "Logo Save (Simulated)",
+      description: `Logo ${logoIndex + 1} would be saved. This feature is coming soon!`,
+    });
+    // In a real implementation, you would save logo.imageDataUri or related info
+    console.log("Simulating save for logo:", generatedLogos?.[logoIndex]);
+  };
+
+  const handleViewSavedLogos = () => {
+    toast({
+      title: "View Saved Logos",
+      description: "This feature is under development and will be available soon!",
+    });
   };
 
   return (
@@ -99,10 +126,30 @@ export function LogoGenerationClient() {
                 )}
               />
             </CardContent>
-            <CardFooter className="flex justify-between items-center">
-              <Button type="submit" disabled={isLoading} size="lg">
+            <CardFooter className="flex flex-wrap gap-2 justify-start items-center">
+              <Button type="submit" disabled={isLoading || !form.watch("basePrompt")} size="lg">
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Generate 10 Logos
+              </Button>
+              <Button 
+                type="button" 
+                onClick={handleRegenerate} 
+                disabled={isLoading || !form.watch("basePrompt")} 
+                variant="outline"
+                size="lg"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Regenerate ♻
+              </Button>
+              <Button 
+                type="button" 
+                onClick={handleViewSavedLogos} 
+                disabled={isLoading}
+                variant="outline"
+                size="lg"
+              >
+                <Bookmark className="mr-2 h-4 w-4" />
+                Saved Logos 👇💼
               </Button>
             </CardFooter>
           </form>
@@ -137,16 +184,21 @@ export function LogoGenerationClient() {
                           data-ai-hint="logo design"
                         />
                       </div>
-                      <Button asChild variant="outline" size="sm" className="w-full mt-1">
-                        <a
-                          href={logo.imageDataUri}
-                          download={`logo-${index + 1}-${Date.now()}.png`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Download className="mr-2 h-3 w-3" /> Download
-                        </a>
-                      </Button>
+                      <div className="flex flex-col sm:flex-row gap-1 w-full mt-1">
+                        <Button asChild variant="outline" size="sm" className="flex-1">
+                          <a
+                            href={logo.imageDataUri}
+                            download={`logo-${index + 1}-${Date.now()}.png`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Download className="mr-1 h-3 w-3 sm:mr-2" /> Download
+                          </a>
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleSaveLogo(index)} className="flex-1">
+                          <Bookmark className="mr-1 h-3 w-3 sm:mr-2" /> Save
+                        </Button>
+                      </div>
                     </>
                   ) : (
                     <div className="w-full aspect-square rounded-md bg-destructive/10 flex flex-col items-center justify-center text-center p-2">
@@ -173,3 +225,5 @@ export function LogoGenerationClient() {
     </div>
   );
 }
+
+    
