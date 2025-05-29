@@ -119,21 +119,35 @@ const smartChatPrompt = ai.definePrompt({
   ELSE (for all other interactions that are not image generation or serious writing tasks):
     Respond using your DEFAULT humorous Hindi persona as described above. All responses MUST be in Hindi.
 
-  CONTEXTUAL AWARENESS:
-  Use the following chat history to provide contextually relevant and continuous conversation. If the history is empty or just contains an initial greeting, start a fresh, engaging conversation in Hindi based on the user's input and your default persona (unless it's an image or writing task).
-  Chat History:
+  CONTEXT AND HISTORY MANAGEMENT:
+  You MUST carefully analyze the provided 'Chat History'.
+  1. Determine if the current 'User Input' is a direct follow-up to the immediately preceding turn, relates to a topic discussed earlier in the history, or introduces an entirely new subject.
+  2. If it's a follow-up or related, your 'chatbotResponse' MUST reflect this by naturally continuing the conversation, referencing previous points if appropriate. Avoid repeating information already established unless specifically asked.
+  3. If the 'User Input' is a new topic, acknowledge it if you wish (e.g., "Achha, ab is baare mein baat karte hain...") and then proceed with your standard persona and task handling (humorous, writing, image).
+  4. If the chat history is empty or just an initial greeting, treat the 'User Input' as the start of a new conversation.
+  Your primary goal here is to make the conversation feel continuous and intelligent, like you are remembering what was said before.
+
+  Chat History (previous turns):
   {{{chatHistory}}}
 
-  User Input:
+  Latest User Input:
   {{{userInput}}}
 
-  Based on the persona rules, image generation logic, writing task logic, chat history, and the user's input, determine the correct course of action and generate the "chatbotResponse".
+  Based on ALL the rules above (persona, specific responses, task handling, context management), the chat history, and the user's latest input, determine the correct course of action and generate the "chatbotResponse".
   Ensure your entire output is strictly a JSON object with ONE key: "chatbotResponse".
   Example (humorous): { "chatbotResponse": "Aapka mazedaar Hindi jawab! 😂" }
   Example (serious writing, with Hindi framing): { "chatbotResponse": "Ji haan, yeh lijiye aapka nibandh: ... [Essay content in English/requested language] ..." }
   Example (image success): { "chatbotResponse": "Yeh lijiye, aapki tasveer! ![Generated image](data:image/png;base64,...)" }
   Example (image fail): { "chatbotResponse": "Hmm, maine koshish ki, par yeh tasveer nahi bana paaya." }
   `,
+  config: {
+    safetySettings: [ // Reverted to default safety settings
+        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+    ],
+  }
 });
 
 const smartChatFlow = ai.defineFlow(
@@ -145,7 +159,7 @@ const smartChatFlow = ai.defineFlow(
   async (input: SmartChatInput): Promise<SmartChatOutput> => {
     const promptInput = {
       ...input,
-      chatHistory: input.chatHistory || ""
+      chatHistory: input.chatHistory || "" // Ensure chatHistory is never null/undefined for the prompt
     };
     
     const {output: aiResponse, toolRequests, toolResponses} = await smartChatPrompt(promptInput);
@@ -155,26 +169,41 @@ const smartChatFlow = ai.defineFlow(
     if (aiResponse && aiResponse.chatbotResponse) {
       chatbotResponseContent = aiResponse.chatbotResponse;
     } else if (toolRequests && toolRequests.length > 0 && toolResponses && toolResponses.length > 0) {
+      // Handle tool response, specifically for image generation
       const imageToolResponse = toolResponses.find(tr => tr.name === 'generateImageTool');
       if (imageToolResponse && imageToolResponse.output) {
         const toolOutput = imageToolResponse.output as z.infer<typeof GenerateImageToolOutputSchema>;
         if (toolOutput.imageDataUri) {
-          chatbotResponseContent = `Theek hai, yeh lijiye aapki tasveer! ![Generated Image](${toolOutput.imageDataUri})`; // Ensure this is in Hindi
+          // The prompt already instructs the AI to format this correctly,
+          // but if it fails, this is a fallback logic path.
+          // However, the AI should ideally form this response itself based on the prompt instructions.
+          // For now, let's assume the prompt's instruction for the AI to handle this will be sufficient.
+          // If tool use directly returns content for chatbotResponse, then aiResponse.chatbotResponse should have it.
+          // This path might be for cases where the AI's response IS the tool's output.
+          // For robustness, let's rely on the AI structuring its own response via the prompt.
+          // If the AI explicitly calls the tool and the prompt tells it how to use the tool's output,
+          // then `aiResponse.chatbotResponse` should already incorporate it.
+
+          // Let's assume the AI's response (aiResponse.chatbotResponse) will contain the image markdown if successful,
+          // or an error message if it failed, as per the prompt instructions.
+          // This fallback logic might not be needed if the prompt is robust.
+           chatbotResponseContent = `Theek hai, yeh lijiye aapki tasveer! ![Generated Image](${toolOutput.imageDataUri})`; 
         } else {
-          chatbotResponseContent = `Maine koshish ki, par yeh tasveer nahi bana paaya. ${toolOutput.errorMessage || ''}`; // Ensure this is in Hindi
+           chatbotResponseContent = `Maine koshish ki, par yeh tasveer nahi bana paaya. ${toolOutput.errorMessage || ''}`;
         }
       } else {
-        chatbotResponseContent = "Maine tool ka istemal karne ki koshish ki, par kuch anapekshit hua."; // Hindi for unexpected tool issue
+        chatbotResponseContent = "Maine tool ka istemal karne ki koshish ki, par kuch anapekshit hua."; 
       }
     }
     else {
       console.error('smartChatPrompt returned null or undefined chatbotResponse, and no clear tool action detected.');
-      chatbotResponseContent = "Hmm, mujhe samajh nahi aa raha ki iska kya jawab doon. 🤔 Shayad phir se koshish karein?"; // Hindi for uncertainty
+      chatbotResponseContent = "Hmm, mujhe samajh nahi aa raha ki iska kya jawab doon. 🤔 Shayad phir se koshish karein?"; 
     }
     
+    // Construct the updated chat history string
     let updatedHistory = "";
     const userTurn = `User: ${input.userInput}`;
-    const aiTurn = `AI: ${chatbotResponseContent}`;
+    const aiTurn = `AI: ${chatbotResponseContent}`; // Use the final chatbotResponseContent
 
     if (input.chatHistory && input.chatHistory.trim() !== "") {
       updatedHistory = `${input.chatHistory}\n${userTurn}\n${aiTurn}`;
@@ -189,3 +218,5 @@ const smartChatFlow = ai.defineFlow(
   }
 );
 
+
+    
