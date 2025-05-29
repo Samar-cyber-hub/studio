@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const socialMediaPlatforms = ["Instagram", "TikTok", "X (Twitter)", "Facebook", "YouTube", "LinkedIn"];
 const contentTypes = [
-  { label: "Standard Video", value: "standard" },
+  { label: "Long video", value: "standard" },
   { label: "Shorts/Reels", value: "short_form" },
 ];
 
@@ -56,7 +56,7 @@ export function SocialMediaOptimizationClient() {
     setThumbnailUrl(null); // Clear previous thumbnail
     try {
       const thumbnailOutput = await generateMedia({ prompt: prompt, mediaType: "image" });
-      if (thumbnailOutput.mediaUrl && !thumbnailOutput.mediaUrl.startsWith("Unsupported") && !thumbnailOutput.mediaUrl.startsWith("Error:")) {
+      if (thumbnailOutput.mediaUrl && thumbnailOutput.status === 'success') {
         setThumbnailUrl(thumbnailOutput.mediaUrl);
       } else {
         setThumbnailUrl(null); // Ensure null if error or unsupported
