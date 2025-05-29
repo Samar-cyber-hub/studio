@@ -7,13 +7,13 @@
  */
 import {z} from 'genkit';
 
-export const GenerateMediaInputSchema = z.object({
+const GenerateMediaInputSchema = z.object({
   prompt: z.string().describe('The prompt for media generation.'),
   mediaType: z.string().describe('The type of media to generate (e.g., "image", "video", "3d_model").'),
 });
 export type GenerateMediaInput = z.infer<typeof GenerateMediaInputSchema>;
 
-export const GenerateMediaOutputSchema = z.object({
+const GenerateMediaOutputSchema = z.object({
   mediaUrl: z.string().describe('The URL or data URI of the generated media, or an error/unsupported message.'),
   status: z.string().describe('Status of the generation (e.g., "success", "error", "unsupported").'),
 });
