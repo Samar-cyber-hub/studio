@@ -29,7 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/smart-chat", label: "Smart Fun Chat", icon: BotMessageSquare },
+  { href: "/smart-chat", label: "Friend : AI 😊😎🤖", icon: BotMessageSquare },
   { href: "/image-generation", label: "Image Generation", icon: ImageIcon },
   { href: "/logo-generation", label: "Logo Generation", icon: Palette }, // New Logo Generation tool
   { href: "/code-generation", label: "Code Generation", icon: CodeXml },
