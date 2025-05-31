@@ -24,14 +24,16 @@ import {
   ImageIcon,
   Share2,
   Sparkles,
-  Palette, // Added Palette icon
+  Palette, 
+  KeyRound, // Added KeyRound icon for Password Generator
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/smart-chat", label: "Friend : AI 😊😎🤖", icon: BotMessageSquare },
   { href: "/image-generation", label: "Image Generation", icon: ImageIcon },
-  { href: "/logo-generation", label: "Logo Generation", icon: Palette }, // New Logo Generation tool
+  { href: "/password-generation", label: "Password Generator", icon: KeyRound }, // New Password Generator tool
+  { href: "/logo-generation", label: "Logo Generation", icon: Palette },
   { href: "/code-generation", label: "Code Generation", icon: CodeXml },
   { href: "/social-media-optimization", label: "Social Media Tools", icon: Share2 },
 ];

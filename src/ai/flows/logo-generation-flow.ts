@@ -3,7 +3,7 @@
 /**
  * @fileOverview A Genkit flow for generating multiple logo options.
  *
- * - generateLogos - A function that generates 10 logo variations based on a prompt.
+ * - generateLogos - A function that generates 6 logo variations based on a prompt.
  * - GenerateLogosInput - The input type for the generateLogos function.
  * - GenerateLogosOutput - The return type for the generateLogos function.
  */
@@ -23,7 +23,7 @@ const SingleLogoOutputSchema = z.object({
 });
 
 const GenerateLogosOutputSchema = z.object({
-  logos: z.array(SingleLogoOutputSchema).describe('An array of 10 generated logo objects.'),
+  logos: z.array(SingleLogoOutputSchema).describe('An array of 6 generated logo objects.'),
 });
 export type GenerateLogosOutput = z.infer<typeof GenerateLogosOutputSchema>;
 
@@ -38,10 +38,7 @@ const logoStylePrefixes = [
   "Modern wordmark with a symbol for: ",
   "Geometric shape logo for: ",
   "Flat design, iconic logo for: ",
-  "Sleek and professional logo for: ",
-  "Playful and creative logo for: ",
-  "Corporate identity logo for: ",
-  "Tech startup brand mark for: ",
+  // Removed 4 prefixes to generate 6 logos instead of 10
 ];
 
 const generateSingleLogo = async (fullPrompt: string): Promise<z.infer<typeof SingleLogoOutputSchema>> => {

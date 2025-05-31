@@ -43,12 +43,12 @@ export function LogoGenerationClient() {
       const successfulLogos = output.logos.filter(logo => logo.imageDataUri).length;
       toast({
         title: "Logos Generated!",
-        description: `${successfulLogos} out of 10 logos created. Some may have failed if errors are shown.`,
+        description: `${successfulLogos} out of 6 logos created. Some may have failed if errors are shown.`,
       });
     } catch (error: any) {
       console.error("Logo generation flow error:", error);
       const errorMessage = error.message || "Something went wrong. Please try again.";
-      const errorResults = Array(10).fill(null).map((_, i) => ({
+      const errorResults = Array(6).fill(null).map((_, i) => ({ // Adjusted to 6
         imageDataUri: null,
         promptUsed: `Attempt ${i + 1} for prompt: ${data.basePrompt}`,
         errorMessage: i === 0 ? errorMessage : "Flow failed before this attempt.",
@@ -87,7 +87,7 @@ export function LogoGenerationClient() {
 
   const handleViewSavedLogos = () => {
     toast({
-      title: "View Saved Logos",
+      title: "View Saved Logos (Coming Soon!)",
       description: "This feature is under development and will be available soon!",
     });
   };
@@ -101,7 +101,7 @@ export function LogoGenerationClient() {
             Describe Your Logo Concept
           </CardTitle>
           <CardDescription>
-            Enter a central idea for your logo (e.g., "a coffee shop called 'The Daily Grind'", "eco-friendly tech company"). We'll generate 10 variations.
+            Enter a central idea for your logo (e.g., "a coffee shop called 'The Daily Grind'", "eco-friendly tech company"). We'll generate 6 variations.
           </CardDescription>
         </CardHeader>
         <Form {...form}>
@@ -129,7 +129,7 @@ export function LogoGenerationClient() {
             <CardFooter className="flex flex-wrap gap-2 justify-start items-center">
               <Button type="submit" disabled={isLoading || !form.watch("basePrompt")} size="lg">
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Generate 10 Logos
+                Generate 6 Logos
               </Button>
               <Button 
                 type="button" 
@@ -167,10 +167,10 @@ export function LogoGenerationClient() {
       {generatedLogos && !isLoading && (
         <Card>
           <CardHeader>
-            <CardTitle>Generated Logo Concepts (10 Variations)</CardTitle>
+            <CardTitle>Generated Logo Concepts (6 Variations)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-4">
               {generatedLogos.map((logo, index) => (
                 <div key={index} className="flex flex-col items-center gap-2 p-2 border rounded-lg shadow-sm">
                   {logo.imageDataUri ? (
@@ -184,18 +184,18 @@ export function LogoGenerationClient() {
                           data-ai-hint="logo design"
                         />
                       </div>
-                      <div className="flex flex-col sm:flex-row gap-1 w-full mt-1">
-                        <Button asChild variant="outline" size="sm" className="flex-1">
+                      <div className="flex flex-col sm:flex-row gap-1 w-full mt-1 justify-center">
+                        <Button asChild variant="outline" size="sm" className="p-2" aria-label="Download logo">
                           <a
                             href={logo.imageDataUri}
                             download={`logo-${index + 1}-${Date.now()}.png`}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            <Download className="mr-1 h-3 w-3 sm:mr-2" /> Download
+                            <Download className="h-4 w-4" />
                           </a>
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleSaveLogo(index)} className="flex-1">
+                        <Button variant="outline" size="sm" onClick={() => handleSaveLogo(index)} className="flex-grow sm:flex-grow-0">
                           <Bookmark className="mr-1 h-3 w-3 sm:mr-2" /> Save
                         </Button>
                       </div>
@@ -225,5 +225,3 @@ export function LogoGenerationClient() {
     </div>
   );
 }
-
-    
