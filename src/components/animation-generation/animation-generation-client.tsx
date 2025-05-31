@@ -11,10 +11,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { generateAnimationConcept, type GenerateAnimationConceptInput, type GenerateAnimationConceptOutput, AnimationStyleSchema, type AnimationStyle } from "@/ai/flows/animation-generation-flow";
+import { generateAnimationConcept, type GenerateAnimationConceptInput, type GenerateAnimationConceptOutput, type AnimationStyle } from "@/ai/flows/animation-generation-flow";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, AlertTriangle, Film, Download } from "lucide-react";
 import NextImage from "next/image";
+
+const animationStyleValues = [
+  "3d_cartoon_character",
+  "2d_anime_scene",
+  "3d_avatar_portrait",
+  "virtual_studio_background",
+  "general_animation_scene",
+  "animated_storyboard_frame"
+] as const;
+
+const AnimationStyleSchemaClient = z.enum(animationStyleValues).describe('The desired style for the animation concept image.');
 
 const animationStyleOptions: { label: string; value: AnimationStyle }[] = [
   { label: "3D Cartoon Character", value: "3d_cartoon_character" },
@@ -28,7 +39,7 @@ const animationStyleOptions: { label: string; value: AnimationStyle }[] = [
 const formSchema = z.object({
   prompt: z.string().min(10, { message: "Prompt must be at least 10 characters." })
     .max(1000, { message: "Prompt must be at most 1000 characters." }),
-  animationStyle: AnimationStyleSchema,
+  animationStyle: AnimationStyleSchemaClient,
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -196,3 +207,4 @@ export function AnimationGenerationClient() {
     </div>
   );
 }
+

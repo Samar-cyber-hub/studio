@@ -11,7 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const AnimationStyleSchema = z.enum([
+const AnimationStyleSchema = z.enum([
   "3d_cartoon_character",
   "2d_anime_scene",
   "3d_avatar_portrait",
@@ -93,3 +93,4 @@ const generateAnimationConceptFlow = ai.defineFlow(
     }
   }
 );
+
