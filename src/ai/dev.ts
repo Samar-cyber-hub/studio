@@ -9,4 +9,5 @@ import '@/ai/flows/social-media-optimization.ts';
 import '@/ai/flows/image-generation-flow.ts'; // Added new image generation flow
 import '@/ai/flows/logo-generation-flow.ts'; // Added new logo generation flow
 import '@/ai/flows/password-generation-flow.ts'; // Added new password generation flow
+import '@/ai/flows/animation-generation-flow.ts'; // Added new animation concept generation flow
 
