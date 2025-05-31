@@ -24,6 +24,7 @@ export type AnimationStyle = z.infer<typeof AnimationStyleSchema>;
 const GenerateAnimationConceptInputSchema = z.object({
   prompt: z.string().describe('The detailed prompt for the animation concept, including characters, setting, mood, and action if any.'),
   animationStyle: AnimationStyleSchema,
+  channelName: z.string().optional().describe('Optional channel name or text to be subtly incorporated into the virtual studio background design.'),
 });
 export type GenerateAnimationConceptInput = z.infer<typeof GenerateAnimationConceptInputSchema>;
 
@@ -55,7 +56,11 @@ const generateAnimationConceptFlow = ai.defineFlow(
   async (input) => {
     try {
       const styleGuidance = styleToPromptEnhancement[input.animationStyle];
-      const fullPrompt = `${styleGuidance} User's idea: "${input.prompt}" Ensure the output is a single, high-quality still image representing this concept.`;
+      let fullPrompt = `${styleGuidance} User's idea: "${input.prompt}" Ensure the output is a single, high-quality still image representing this concept.`;
+
+      if (input.animationStyle === "virtual_studio_background" && input.channelName && input.channelName.trim() !== "") {
+        fullPrompt += ` The background should subtly and professionally incorporate the text or channel name: "${input.channelName}". This text should be integrated naturally into the studio design, perhaps on a screen, a wall banner, a desk nameplate, or as a modern graphic element. It should look like part of a real broadcast studio set.`;
+      }
 
       const {media, text} = await ai.generate({
         model: 'googleai/gemini-2.0-flash-exp',
@@ -93,4 +98,3 @@ const generateAnimationConceptFlow = ai.defineFlow(
     }
   }
 );
-

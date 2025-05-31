@@ -7,13 +7,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { generateAnimationConcept, type GenerateAnimationConceptInput, type GenerateAnimationConceptOutput, type AnimationStyle } from "@/ai/flows/animation-generation-flow";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, AlertTriangle, Film, Download } from "lucide-react";
+import { Loader2, AlertTriangle, Film, Download, Tv } from "lucide-react";
 import NextImage from "next/image";
 
 const animationStyleValues = [
@@ -40,6 +41,7 @@ const formSchema = z.object({
   prompt: z.string().min(10, { message: "Prompt must be at least 10 characters." })
     .max(1000, { message: "Prompt must be at most 1000 characters." }),
   animationStyle: AnimationStyleSchemaClient,
+  channelName: z.string().max(50, { message: "Channel name must be at most 50 characters." }).optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -53,14 +55,21 @@ export function AnimationGenerationClient() {
     defaultValues: {
       prompt: "",
       animationStyle: "general_animation_scene",
+      channelName: "",
     },
   });
+
+  const watchedAnimationStyle = form.watch("animationStyle");
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     setGeneratedConcept(null);
     try {
-      const input: GenerateAnimationConceptInput = { prompt: data.prompt, animationStyle: data.animationStyle };
+      const input: GenerateAnimationConceptInput = { 
+        prompt: data.prompt, 
+        animationStyle: data.animationStyle,
+        channelName: data.animationStyle === "virtual_studio_background" ? data.channelName : undefined,
+      };
       const output = await generateAnimationConcept(input);
       setGeneratedConcept(output);
       if (output.imageDataUri) {
@@ -128,12 +137,35 @@ export function AnimationGenerationClient() {
                   </FormItem>
                 )}
               />
+              
+              {watchedAnimationStyle === "virtual_studio_background" && (
+                <FormField
+                  control={form.control}
+                  name="channelName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center">
+                        <Tv className="mr-2 h-4 w-4 text-muted-foreground" />
+                        Channel Name for Studio Background (Optional)
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., 'My Awesome Channel' or 'Tech Talks Live'"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               <FormField
                 control={form.control}
                 name="prompt"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Detailed Prompt</FormLabel>
+                    <FormLabel>Detailed Prompt for the Scene/Concept</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="e.g., 'A brave knight facing a fire-breathing dragon in a dark cave, dramatic lighting' or 'A cheerful robot waving hello in a futuristic city street'"
@@ -179,7 +211,7 @@ export function AnimationGenerationClient() {
                     alt="Generated AI Animation Concept"
                     layout="fill"
                     objectFit="contain"
-                     data-ai-hint="animation concept art"
+                    data-ai-hint="animation concept art"
                   />
                 </div>
                 <Button asChild variant="outline" className="mt-4 w-full">
@@ -207,4 +239,3 @@ export function AnimationGenerationClient() {
     </div>
   );
 }
-
