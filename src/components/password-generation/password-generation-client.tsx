@@ -96,7 +96,7 @@ export function PasswordGenerationClient() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Wand2 className="mr-2 h-6 w-6 text-primary" />
-            Describe Your Password Needs
+            Describe Your Password Needs🖥🔒🔑
           </CardTitle>
           <CardDescription>
             Tell the AI what kind of password you need. For example, specify its purpose, desired length, or if it should include uppercase, lowercase, numbers, and symbols.
