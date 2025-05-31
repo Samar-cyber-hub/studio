@@ -18,7 +18,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 const formSchema = z.object({
   description: z.string().min(10, { message: "Please describe your password needs in at least 10 characters." })
     .max(500, { message: "Description must be at most 500 characters." }),
-  desiredLength: z.coerce.number().optional().positive({message: "Length must be a positive number."}).max(128, {message: "Length cannot exceed 128 characters."}),
+  desiredLength: z.coerce.number()
+    .positive({message: "Length must be a positive number."})
+    .max(128, {message: "Length cannot exceed 128 characters."})
+    .optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
