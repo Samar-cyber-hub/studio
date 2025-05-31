@@ -72,7 +72,7 @@ const prompt = ai.definePrompt({
   - Style Suggestions: Consider styles like animated, 3D model, 2D illustration, "trolled" (humorous/meme-like if suitable and tastefully done), realistic, vibrant, minimalist, cartoonish. Ensure the suggested style aligns with the platform's typical audience and content.
   - Text Overlay Suggestions: Crucially, suggest concise, impactful, and "best text" for overlays on the thumbnail. This text should be catchy and designed to hook the viewer. For vertical short-form thumbnails, text should be large, easily readable on mobile, and placed strategically to avoid being obscured by platform UI elements (e.g., top or bottom areas).
   - Hook Elements: If applicable, suggest incorporating popular visual motifs, relevant emojis, or meme elements if they align with the content's tone and target audience on {{{platform}}} to make the thumbnail "hooked" and "catching".
-  The overall thumbnail prompt must be specific enough for an advanced image generation AI to produce a compelling and effective visual with clear text.
+  The overall thumbnail prompt must be specific enough for an advanced image generation AI to produce a compelling and effective visual with clear text, while also being mindful of prompt efficiency for faster image generation.
 
   Format your response as a JSON object.
   `,
