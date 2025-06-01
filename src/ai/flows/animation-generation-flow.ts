@@ -22,7 +22,7 @@ const AnimationStyleSchema = z.enum([
 export type AnimationStyle = z.infer<typeof AnimationStyleSchema>;
 
 const GenerateAnimationConceptInputSchema = z.object({
-  prompt: z.string().describe('The detailed prompt for the animation concept, including characters, setting, mood, and action if any.'),
+  prompt: z.string().describe('The detailed prompt for the animation concept, including characters, setting, mood, and action if any. For virtual studios, specify desired colors, items like microphones, laptops, play buttons, and overall theme.'),
   animationStyle: AnimationStyleSchema,
   channelName: z.string().optional().describe('Optional channel name or text to be subtly incorporated into the virtual studio background design.'),
 });
@@ -41,8 +41,8 @@ export async function generateAnimationConcept(input: GenerateAnimationConceptIn
 const styleToPromptEnhancement: Record<AnimationStyle, string> = {
   "3d_cartoon_character": "Create a vibrant 3D cartoon character concept art. Focus on expressive features and a playful style.",
   "2d_anime_scene": "Generate a dynamic 2D anime scene. Emphasize dramatic lighting, detailed backgrounds, and characteristic anime art style.",
-  "3d_avatar_portrait": "Produce a high-quality 3D talking avatar portrait. The style should be suitable for a virtual presenter or character model, focusing on a clear view of the face and upper body.",
-  "virtual_studio_background": "Design an impressive virtual studio background image. This should be a professional-looking, modern studio setting, suitable for video production or streaming.",
+  "3d_avatar_portrait": "Produce a high-quality 3D talking avatar portrait concept. The style should be suitable for a virtual presenter or character model, focusing on a clear view of the face and upper body.",
+  "virtual_studio_background": "Design a professional and modern virtual studio background, suitable for video production or streaming. The scene should feature typical studio elements like a desk area (potentially with items like a microphone, laptop, or monitors if described by the user), shelving, dynamic lighting, and opportunities for branding. The user might specify a color scheme, specific items like YouTube play buttons, or a particular mood (e.g., tech-focused, minimalist, bright). The image should be composed as a background, leaving appropriate space for a presenter or character if one were to be added later.",
   "general_animation_scene": "Illustrate a general animation scene concept. This could be a landscape, an object, or an abstract visual, rendered in a style suitable for animation.",
   "animated_storyboard_frame": "Create a single, detailed storyboard frame as if for an animation. Clearly depict the action, characters, and setting for this specific moment."
 };
@@ -98,3 +98,4 @@ const generateAnimationConceptFlow = ai.defineFlow(
     }
   }
 );
+
