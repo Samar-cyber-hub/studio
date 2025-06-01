@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { generateShortUrl, type GenerateShortUrlInput, type GenerateShortUrlOutput } from "@/ai/flows/url-shortener-flow";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, ClipboardCopy, AlertTriangle, Link2 } from "lucide-react";
+import { Loader2, ClipboardCopy, Info, Link2 } from "lucide-react"; // Changed AlertTriangle to Info
 
 const formSchema = z.object({
   longUrl: z.string().url({ message: "Please enter a valid URL (e.g., https://example.com)" }),
@@ -135,9 +135,9 @@ export function UrlShortenerClient() {
             ) : (
                  <p className="text-destructive font-medium">{shortUrlOutput.shortUrlString}</p>
             )}
-             <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Important Disclaimer</AlertTitle>
+             <Alert variant="default"> {/* Changed variant to default */}
+                <Info className="h-4 w-4" /> {/* Changed icon to Info */}
+                <AlertTitle>How This Tool Works</AlertTitle> {/* Changed title */}
                 <AlertDescription>
                   {shortUrlOutput.disclaimer}
                 </AlertDescription>
