@@ -14,8 +14,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { generateAnimationConcept, type GenerateAnimationConceptInput, type GenerateAnimationConceptOutput, type AnimationStyle } from "@/ai/flows/animation-generation-flow";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, AlertTriangle, Film, Download, Tv } from "lucide-react";
+import { Loader2, AlertTriangle, Film, Download, Tv, RefreshCw } from "lucide-react"; // Added RefreshCw
 import NextImage from "next/image";
+import { cn } from "@/lib/utils";
 
 const animationStyleValues = [
   "3d_cartoon_character",
@@ -26,6 +27,7 @@ const animationStyleValues = [
   "animated_storyboard_frame"
 ] as const;
 
+// Define schema locally in the client component
 const AnimationStyleSchemaClient = z.enum(animationStyleValues).describe('The desired style for the animation concept image.');
 
 const animationStyleOptions: { label: string; value: AnimationStyle }[] = [
@@ -40,7 +42,7 @@ const animationStyleOptions: { label: string; value: AnimationStyle }[] = [
 const formSchema = z.object({
   prompt: z.string().min(10, { message: "Prompt must be at least 10 characters." })
     .max(1000, { message: "Prompt must be at most 1000 characters." }),
-  animationStyle: AnimationStyleSchemaClient,
+  animationStyle: AnimationStyleSchemaClient, // Use locally defined schema
   channelName: z.string().max(50, { message: "Channel name must be at most 50 characters." }).optional(),
 });
 
@@ -96,6 +98,13 @@ export function AnimationGenerationClient() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRegenerate = () => {
+    // This will re-validate the form using react-hook-form's handleSubmit
+    // and then call onSubmit if the form is valid.
+    // It uses the current values in the form fields.
+    form.handleSubmit(onSubmit)();
   };
 
   return (
@@ -214,25 +223,45 @@ export function AnimationGenerationClient() {
                     data-ai-hint="animation concept art"
                   />
                 </div>
-                <Button asChild variant="outline" className="mt-4 w-full">
-                  <a
-                    href={generatedConcept.imageDataUri}
-                    download={`animation-concept-${Date.now()}.png`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Download className="mr-2 h-4 w-4" /> Download Concept Image
-                  </a>
-                </Button>
               </div>
             )}
+
             {generatedConcept.errorMessage && (
-              <Alert variant="destructive" className="w-full">
+              <Alert variant="destructive" className="w-full max-w-xl mb-4">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Generation Failed</AlertTitle>
                 <AlertDescription>{generatedConcept.errorMessage}</AlertDescription>
               </Alert>
             )}
+            
+            {/* Buttons Area - always shown if a generation attempt was made */}
+            <div className="w-full max-w-xl">
+              <div className="flex flex-col sm:flex-row gap-2">
+                {generatedConcept.imageDataUri && ( // Download button only if image exists
+                  <Button asChild variant="outline" className="flex-1">
+                    <a
+                      href={generatedConcept.imageDataUri}
+                      download={`animation-concept-${Date.now()}.png`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Download className="mr-2 h-4 w-4" /> Download Concept Image
+                    </a>
+                  </Button>
+                )}
+                <Button
+                  variant="secondary"
+                  onClick={handleRegenerate}
+                  disabled={isLoading || !form.watch("prompt")}
+                  className={cn(
+                    generatedConcept.imageDataUri ? "flex-1" : "w-full"
+                  )}
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  {generatedConcept.imageDataUri ? "Regenerate" : "Try Regenerating"}
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
