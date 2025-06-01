@@ -26,7 +26,8 @@ import {
   Sparkles,
   Palette,
   KeyRound,
-  Film, // Added Film icon for Animation Concepts
+  Film, 
+  Link2, // Added Link2 icon for URL Shortener
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -35,8 +36,9 @@ const navItems = [
   { href: "/image-generation", label: "Image Generation", icon: ImageIcon },
   { href: "/password-generation", label: "Password Generator", icon: KeyRound },
   { href: "/logo-generation", label: "Logo Generation", icon: Palette },
-  { href: "/animation-generation", label: "Animation Concepts", icon: Film }, // New Animation Concepts tool
+  { href: "/animation-generation", label: "Animation Concepts", icon: Film },
   { href: "/code-generation", label: "Code Generation", icon: CodeXml },
+  { href: "/url-shortener", label: "URL Shortener 🔗", icon: Link2 }, // New URL Shortener tool
   { href: "/social-media-optimization", label: "Social Media Tools", icon: Share2 },
 ];
 
