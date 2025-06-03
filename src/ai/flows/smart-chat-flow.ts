@@ -163,30 +163,39 @@ const smartChatFlow = ai.defineFlow(
       chatHistory: input.chatHistory || "" 
     };
     
-    const {output: aiResponse, toolRequests, toolResponses} = await smartChatPrompt(promptInput);
-    
     let chatbotResponseContent: string;
 
-    if (aiResponse && aiResponse.chatbotResponse) {
-      chatbotResponseContent = aiResponse.chatbotResponse;
-    } else if (toolRequests && toolRequests.length > 0 && toolResponses && toolResponses.length > 0) {
-      const imageToolResponse = toolResponses.find(tr => tr.name === 'generateImageTool');
-      if (imageToolResponse && imageToolResponse.output) {
-        const toolOutput = imageToolResponse.output as z.infer<typeof GenerateImageToolOutputSchema>;
-        if (toolOutput.imageDataUri) {
-           // The AI should form this response based on prompt instructions.
-           // This is a fallback if the AI fails to include the image markdown directly.
-           chatbotResponseContent = `Okay boss, yeh lijiye aapki image! Looking cool! ![Generated image](${toolOutput.imageDataUri})`; 
+    try {
+      const {output: aiResponse, toolRequests, toolResponses} = await smartChatPrompt(promptInput);
+      
+      if (aiResponse && aiResponse.chatbotResponse) {
+        chatbotResponseContent = aiResponse.chatbotResponse;
+      } else if (toolRequests && toolRequests.length > 0 && toolResponses && toolResponses.length > 0) {
+        const imageToolResponse = toolResponses.find(tr => tr.name === 'generateImageTool');
+        if (imageToolResponse && imageToolResponse.output) {
+          const toolOutput = imageToolResponse.output as z.infer<typeof GenerateImageToolOutputSchema>;
+          if (toolOutput.imageDataUri) {
+             // The AI should form this response based on prompt instructions.
+             // This is a fallback if the AI fails to include the image markdown directly.
+             chatbotResponseContent = `Okay boss, yeh lijiye aapki image! Looking cool! ![Generated image](${toolOutput.imageDataUri})`; 
+          } else {
+             chatbotResponseContent = `Arre yaar, image banane ki koshish ki, but kuch problem ho gayi. ${toolOutput.errorMessage || 'Sorry, is baar generate nahi kar paya.'}`;
+          }
         } else {
-           chatbotResponseContent = `Arre yaar, image banane ki koshish ki, but kuch problem ho gayi. ${toolOutput.errorMessage || 'Sorry, is baar generate nahi kar paya.'}`;
+          chatbotResponseContent = "Maine tool ka istemal karne ki koshish ki, par kuch anapekshit hua."; 
         }
-      } else {
-        chatbotResponseContent = "Maine tool ka istemal karne ki koshish ki, par kuch anapekshit hua."; 
       }
-    }
-    else {
-      console.error('smartChatPrompt returned null or undefined chatbotResponse, and no clear tool action detected.');
-      chatbotResponseContent = "Hmm, mujhe samajh nahi aa raha ki iska kya jawab doon. 🤔 Shayad phir se koshish karein?"; 
+      else {
+        console.error('smartChatPrompt returned null or undefined chatbotResponse, and no clear tool action detected.');
+        chatbotResponseContent = "Hmm, mujhe samajh nahi aa raha ki iska kya jawab doon. 🤔 Shayad phir se koshish karein?"; 
+      }
+    } catch (error: any) {
+      console.error('Error in smartChatFlow calling smartChatPrompt:', error);
+      if (error.message && (error.message.includes('503') || error.message.toLowerCase().includes('model is overloaded') || error.message.toLowerCase().includes('service unavailable'))) {
+        chatbotResponseContent = "Arre yaar, AI abhi thoda busy hai ya high traffic mein hai. Thodi der baad try karo na! 🙏 Traffic jam ho gaya lagta hai! 🚦";
+      } else {
+        chatbotResponseContent = "Oops! Kuch gadbad ho gayi server mein. 🤔 Thoda ruk ke try karna, please.";
+      }
     }
     
     let updatedHistory = "";
@@ -205,5 +214,7 @@ const smartChatFlow = ai.defineFlow(
     };
   }
 );
+
+    
 
     
