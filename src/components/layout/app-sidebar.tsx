@@ -11,10 +11,10 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarTrigger, // SidebarTrigger is kept for potential desktop use if design changes, but not used for mobile here
+  SidebarTrigger, 
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+import { SheetTitle } from "@/components/ui/sheet"; // Import SheetTitle
 import { PopGptAppIcon } from "@/components/icons/popgpt-app-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -29,7 +29,7 @@ import {
   Film, 
   Link2, 
   ClipboardList,
-  Camera, // Added Camera icon
+  Camera, 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -48,19 +48,26 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { state: sidebarState, isMobile } = useSidebar(); // isMobile still useful for other logic if needed
+  const { state: sidebarState, isMobile } = useSidebar(); 
+  const isDesktopExpanded = sidebarState === "expanded";
 
-  const isExpanded = sidebarState === "expanded";
+  // Determine if the title and icon should be in their "expanded" state layout
+  // This is true if on mobile (sheet view always appears expanded) or if desktop sidebar is expanded.
+  const isEffectivelyExpanded = isMobile || isDesktopExpanded;
 
   return (
     <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader className="p-2 flex items-center gap-2 h-14">
-        <PopGptAppIcon className={cn("size-7 text-primary", isExpanded ? "ml-1" : "mx-auto")} />
-        <h1 className={cn("text-xl font-semibold tracking-tight text-primary", !isExpanded && "hidden")}>
-          PopGPT <span className="text-accent">:AI</span>
-        </h1>
-        {/* Mobile trigger is now handled by MobileHeader component */}
-        {/* {isMobile && <SidebarTrigger className="ml-auto" />} */}
+        <PopGptAppIcon className={cn("size-7 text-primary", isEffectivelyExpanded ? "ml-1" : "mx-auto")} />
+        {isMobile ? (
+          <SheetTitle className="text-xl font-semibold tracking-tight text-primary">
+            PopGPT <span className="text-accent">:AI</span>
+          </SheetTitle>
+        ) : (
+          <h1 className={cn("text-xl font-semibold tracking-tight text-primary", !isDesktopExpanded && "hidden")}>
+            PopGPT <span className="text-accent">:AI</span>
+          </h1>
+        )}
       </SidebarHeader>
       <Separator />
       <SidebarContent asChild>
@@ -72,12 +79,12 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     isActive={pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/")}
-                    tooltip={isExpanded ? undefined : item.label}
+                    tooltip={isDesktopExpanded ? undefined : item.label} // Tooltip only when desktop is collapsed
                     className="justify-start"
                   >
                     <a>
                       <item.icon className="shrink-0" />
-                      <span className={cn(!isExpanded && "sr-only")}>{item.label}</span>
+                      <span className={cn(!isDesktopExpanded && "sr-only")}>{item.label}</span>
                     </a>
                   </SidebarMenuButton>
                 </Link>
@@ -87,9 +94,9 @@ export function AppSidebar() {
         </ScrollArea>
       </SidebarContent>
       <SidebarFooter className="p-2">
-         <div className={cn("text-xs text-muted-foreground flex items-center gap-1", !isExpanded && "justify-center")}>
-            <Sparkles className={cn("size-3", !isExpanded && "size-4")} />
-            <span className={cn(!isExpanded && "hidden")}>Powered by GenAI</span>
+         <div className={cn("text-xs text-muted-foreground flex items-center gap-1", !isEffectivelyExpanded && "justify-center")}>
+            <Sparkles className={cn("size-3", !isEffectivelyExpanded && "size-4")} />
+            <span className={cn(!isEffectivelyExpanded && "hidden")}>Powered by GenAI</span>
           </div>
       </SidebarFooter>
     </Sidebar>
