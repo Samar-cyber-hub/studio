@@ -13,15 +13,24 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { CodeBlock } from "@/components/common/code-block";
 
-import { generateTestPaper, type GenerateTestPaperInput, type GenerateTestPaperOutput } from "@/ai/flows/test-paper-generation-flow";
+import { generateTestPaper, type GenerateTestPaperInput, type GenerateTestPaperOutput, type Difficulty } from "@/ai/flows/test-paper-generation-flow";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, AlertTriangle, ClipboardList, Download, ClipboardCopy, Share2, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+
+const difficultyLevels: { label: string; value: Difficulty | "AI_Decides" }[] = [
+  { label: "Let AI Decide", value: "AI_Decides" },
+  { label: "Easy", value: "Easy" },
+  { label: "Medium", value: "Medium" },
+  { label: "Hard", value: "Hard" },
+];
 
 const formSchema = z.object({
   chapterName: z.string().min(3, { message: "Chapter name must be at least 3 characters." })
@@ -30,6 +39,8 @@ const formSchema = z.object({
     .max(50, { message: "Class/Grade level must be at most 50 characters." }),
   numberOfQuestions: z.coerce.number().int().positive().max(50, "Max 50 questions").optional(),
   questionTypes: z.string().max(200, "Question types string too long").optional().describe("Comma-separated preferred question types (e.g., MCQ, Short Answer)"),
+  difficulty: z.enum(["Easy", "Medium", "Hard", "AI_Decides"]).optional(),
+  includePYQs: z.boolean().default(false).optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -45,6 +56,8 @@ export function TestPaperGenerationClient() {
       className: "",
       numberOfQuestions: undefined,
       questionTypes: "",
+      difficulty: "AI_Decides",
+      includePYQs: false,
     },
   });
 
@@ -55,6 +68,7 @@ export function TestPaperGenerationClient() {
       const input: GenerateTestPaperInput = { 
         ...data,
         questionTypes: data.questionTypes ? data.questionTypes.split(',').map(qt => qt.trim()).filter(qt => qt) : undefined,
+        difficulty: data.difficulty === "AI_Decides" ? undefined : data.difficulty, // Pass undefined if AI_Decides
       };
       const output = await generateTestPaper(input);
       setTestOutput(output);
@@ -166,6 +180,52 @@ export function TestPaperGenerationClient() {
                     </FormControl>
                     <FormMessage />
                     <FormDescription>If blank, AI will use a variety of types.</FormDescription>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="difficulty"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Difficulty Level</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select difficulty" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {difficultyLevels.map((level) => (
+                          <SelectItem key={level.value} value={level.value}>
+                            {level.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="includePYQs"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 md:col-span-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        Include Previous Year Question Styles?
+                      </FormLabel>
+                      <FormDescription>
+                        AI will try to generate questions in the style of PYQs.
+                      </FormDescription>
+                    </div>
                   </FormItem>
                 )}
               />
@@ -294,5 +354,3 @@ export function TestPaperGenerationClient() {
     </div>
   );
 }
-
-    

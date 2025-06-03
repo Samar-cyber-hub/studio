@@ -11,11 +11,16 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+const DifficultyEnum = z.enum(["Easy", "Medium", "Hard", "AI_Decides"]);
+export type Difficulty = z.infer<typeof DifficultyEnum>;
+
 const GenerateTestPaperInputSchema = z.object({
   chapterName: z.string().min(1, "Chapter name cannot be empty.").describe("The name or topic of the chapter for the test."),
   className: z.string().min(1, "Class/Grade level cannot be empty.").describe("The class or grade level of the students (e.g., 'Grade 5', 'Class 10th', 'High School Biology')."),
   numberOfQuestions: z.number().int().positive().optional().describe("Optional: Specific number of questions desired. AI will decide if not provided (typically 10-20)."),
   questionTypes: z.array(z.string()).optional().describe("Optional: Preferred question types (e.g., ['MCQ', 'Short Answer', 'Essay']). AI will vary if not provided."),
+  difficulty: DifficultyEnum.optional().describe("Optional: Desired difficulty level for the test paper. If 'AI_Decides' or not provided, AI will determine difficulty."),
+  includePYQs: z.boolean().optional().default(false).describe("Optional: Whether to include questions in the style of Previous Year Questions (PYQs)."),
 });
 export type GenerateTestPaperInput = z.infer<typeof GenerateTestPaperInputSchema>;
 
@@ -51,11 +56,20 @@ Preferred Question Types: {{#each questionTypes}}{{{this}}}{{#unless @last}}, {{
 {{else}}
 Question Types: Please include a variety of question types appropriate for the subject and grade level (e.g., Multiple Choice Questions (MCQs), True/False, Fill-in-the-blanks, Short Answer Questions, Long Answer Questions, Problem-solving).
 {{/if}}
+{{#if difficulty}}
+{{#unless (eq difficulty "AI_Decides")}}
+Desired Difficulty Level: {{{difficulty}}}
+{{/unless}}
+{{/if}}
+{{#if includePYQs}}
+Instruction: Where appropriate, please try to include questions that are in the style of, or representative of, previous year examination questions (PYQs) for this topic and class level.
+{{/if}}
 
 Instructions:
 1.  **Test Paper Title:** Create a clear and relevant title for the test paper (e.g., "Chapter 5: Cell Biology - Unit Test for {{{className}}}").
 2.  **Test Paper Content:**
     *   Generate a comprehensive test paper covering the key concepts of the specified '{{{chapterName}}}' suitable for '{{{className}}}' students.
+    *   If a 'difficulty' level other than 'AI_Decides' is specified, tailor the complexity and depth of questions accordingly.
     *   If 'numberOfQuestions' is provided by the user, try to adhere to it. Otherwise, create a balanced test with a reasonable number of questions as indicated above.
     *   If 'questionTypes' are specified by the user, include them. Otherwise, include a variety of question types as suggested. For MCQs, provide 4 distinct options (A, B, C, D).
     *   Ensure questions are clear, unambiguous, and well-phrased.
@@ -66,7 +80,7 @@ Instructions:
     *   For other question types, answers should be comprehensive enough for a student or teacher to understand the correct response and reasoning.
     *   The solution key MUST also be formatted in Markdown, clearly corresponding to the question numbers in the test paper (e.g., ## Solution Key, 1. Answer details...).
 4.  **Difficulty and Time:**
-    *   Assess the overall difficulty of the generated test paper (e.g., 'Easy', 'Moderate', 'Challenging').
+    *   Assess the overall difficulty of the generated test paper (e.g., 'Easy', 'Moderate', 'Challenging'). This assessment should reflect the final generated paper, even if a specific difficulty was requested.
     *   Estimate the time (in minutes) that an average student of the specified class level would need to complete the test.
 
 Output Fields (ensure your entire response is a single JSON object matching this structure):
@@ -117,5 +131,3 @@ const generateTestPaperFlow = ai.defineFlow(
     return output;
   }
 );
-
-    
