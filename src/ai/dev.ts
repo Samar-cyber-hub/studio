@@ -12,6 +12,7 @@ import '@/ai/flows/password-generation-flow.ts'; // Added new password generatio
 import '@/ai/flows/animation-generation-flow.ts'; // Added new animation concept generation flow
 import '@/ai/flows/url-shortener-flow.ts'; // Added new URL shortener flow
 import '@/ai/flows/test-paper-generation-flow.ts'; // Added new Test Paper Generation flow
+import '@/ai/flows/photo-question-solver-flow.ts'; // Added new Photo Question Solver flow
 
 
     

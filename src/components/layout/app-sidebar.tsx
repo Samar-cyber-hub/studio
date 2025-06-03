@@ -29,6 +29,7 @@ import {
   Film, 
   Link2, 
   ClipboardList,
+  Camera, // Added Camera icon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +42,7 @@ const navItems = [
   { href: "/code-generation", label: "Code Generation", icon: CodeXml },
   { href: "/url-shortener", label: "URL Shortener 🔗", icon: Link2 },
   { href: "/test-paper-generation", label: "Test Time 💥👨‍🏫", icon: ClipboardList },
+  { href: "/photo-question", label: "Photo Question 📷❓", icon: Camera },
   { href: "/social-media-optimization", label: "Social Media Tools", icon: Share2 },
 ];
 
