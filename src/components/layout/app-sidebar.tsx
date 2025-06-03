@@ -27,7 +27,8 @@ import {
   Palette,
   KeyRound,
   Film, 
-  Link2, // Added Link2 icon for URL Shortener
+  Link2, 
+  ClipboardList, // Added ClipboardList icon for Test Paper Generator
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +39,8 @@ const navItems = [
   { href: "/logo-generation", label: "Logo Generation", icon: Palette },
   { href: "/animation-generation", label: "Animation Concepts", icon: Film },
   { href: "/code-generation", label: "Code Generation", icon: CodeXml },
-  { href: "/url-shortener", label: "URL Shortener 🔗", icon: Link2 }, // New URL Shortener tool
+  { href: "/url-shortener", label: "URL Shortener 🔗", icon: Link2 },
+  { href: "/test-paper-generation", label: "Test Time 💥👨‍🏫", icon: ClipboardList }, // New Test Paper Generator tool
   { href: "/social-media-optimization", label: "Social Media Tools", icon: Share2 },
 ];
 
@@ -90,3 +92,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+    
