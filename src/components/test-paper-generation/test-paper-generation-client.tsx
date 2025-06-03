@@ -8,8 +8,8 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription as UiCardDescription } from "@/components/ui/card";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,6 +21,7 @@ import { generateTestPaper, type GenerateTestPaperInput, type GenerateTestPaperO
 import { toast } from "@/hooks/use-toast";
 import { Loader2, AlertTriangle, ClipboardList, Download, ClipboardCopy, Share2, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   chapterName: z.string().min(3, { message: "Chapter name must be at least 3 characters." })
@@ -102,9 +103,9 @@ export function TestPaperGenerationClient() {
             <ClipboardList className="mr-2 h-6 w-6 text-primary" />
             Test Paper Details
           </CardTitle>
-          <CardDescription>
+          <UiCardDescription>
             Provide the chapter name, class/grade, and optionally specify the number of questions and types.
-          </CardDescription>
+          </UiCardDescription>
         </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -225,7 +226,7 @@ export function TestPaperGenerationClient() {
                             return !inline && match ? (
                               <CodeBlock language={match[1]} code={String(children).replace(/\n$/, '')} {...props} />
                             ) : (
-                              <code className={cn("bg-muted px-1 py-0.5 rounded text-sm", className)} {...props}>{children}</code>
+                              <code className={cn("bg-muted px-1 py-0.5 rounded text-sm", className ?? '')} {...props}>{children}</code>
                             );
                           },
                           p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
@@ -267,7 +268,7 @@ export function TestPaperGenerationClient() {
                             return !inline && match ? (
                               <CodeBlock language={match[1]} code={String(children).replace(/\n$/, '')} {...props} />
                             ) : (
-                              <code className={cn("bg-muted px-1 py-0.5 rounded text-sm", className)} {...props}>{children}</code>
+                              <code className={cn("bg-muted px-1 py-0.5 rounded text-sm", className ?? '')} {...props}>{children}</code>
                             );
                           },
                           p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
@@ -293,6 +294,5 @@ export function TestPaperGenerationClient() {
     </div>
   );
 }
-
 
     
