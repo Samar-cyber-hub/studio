@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarTrigger,
+  SidebarTrigger, // SidebarTrigger is kept for potential desktop use if design changes, but not used for mobile here
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import {
   KeyRound,
   Film, 
   Link2, 
-  ClipboardList, // Added ClipboardList icon for Test Paper Generator
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,13 +40,13 @@ const navItems = [
   { href: "/animation-generation", label: "Animation Concepts", icon: Film },
   { href: "/code-generation", label: "Code Generation", icon: CodeXml },
   { href: "/url-shortener", label: "URL Shortener 🔗", icon: Link2 },
-  { href: "/test-paper-generation", label: "Test Time 💥👨‍🏫", icon: ClipboardList }, // New Test Paper Generator tool
+  { href: "/test-paper-generation", label: "Test Time 💥👨‍🏫", icon: ClipboardList },
   { href: "/social-media-optimization", label: "Social Media Tools", icon: Share2 },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { state: sidebarState, isMobile } = useSidebar();
+  const { state: sidebarState, isMobile } = useSidebar(); // isMobile still useful for other logic if needed
 
   const isExpanded = sidebarState === "expanded";
 
@@ -57,7 +57,8 @@ export function AppSidebar() {
         <h1 className={cn("text-xl font-semibold tracking-tight text-primary", !isExpanded && "hidden")}>
           PopGPT <span className="text-accent">:AI</span>
         </h1>
-        {isMobile && <SidebarTrigger className="ml-auto" />}
+        {/* Mobile trigger is now handled by MobileHeader component */}
+        {/* {isMobile && <SidebarTrigger className="ml-auto" />} */}
       </SidebarHeader>
       <Separator />
       <SidebarContent asChild>
@@ -92,5 +93,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
-    
