@@ -127,6 +127,7 @@ const smartChatPrompt = ai.definePrompt({
   3. If the 'User Input' is a new topic, acknowledge it if you wish (e.g., "Achha, ab is baare mein baat karte hain..." or "Okay, new topic! Let's talk about...") and then proceed with your standard persona and task handling (humorous, writing, image).
   4. If the chat history is empty or just an initial greeting, treat the 'User Input' as the start of a new conversation.
   Your primary goal here is to make the conversation feel continuous and intelligent, like you are remembering what was said before.
+  When understanding or referring to the user's input, you MUST use the exact phrasing provided in "Latest User Input". Do NOT rephrase, reorder, or "correct" the user's input in your internal processing or when quoting it as part of your response.
 
   Chat History (previous turns):
   {{{chatHistory}}}
