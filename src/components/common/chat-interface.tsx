@@ -18,7 +18,7 @@ interface ChatInterfaceProps {
   onClearChat?: () => void;
   onSaveChatMessage?: (messageContent: string) => void;
   onDeleteSingleMessage?: (messageId: string) => void;
-  onViewSavedChats?: () => void; // New prop for viewing saved chats
+  onViewSavedChats?: () => void; 
 }
 
 export function ChatInterface({
@@ -29,7 +29,7 @@ export function ChatInterface({
   onClearChat,
   onSaveChatMessage,
   onDeleteSingleMessage,
-  onViewSavedChats, // Destructure new prop
+  onViewSavedChats, 
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -51,7 +51,6 @@ export function ChatInterface({
     inputRef.current?.focus();
   }, []);
 
-  // Update messages if initialMessages prop changes (e.g., after a clear chat)
   useEffect(() => {
     setMessages(initialMessages);
   }, [initialMessages]);
@@ -71,20 +70,24 @@ export function ChatInterface({
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
+    // Capture messages state *before* adding the new user message for history passing
+    const historyForSendMessage = chatHistoryEnabled ? [...messages] : undefined;
+    
     const newUserMessage: Message = {
-      id: Date.now().toString(),
+      id: Date.now().toString(), // This ID is for optimistic UI update
       role: "user",
-      content: input,
+      content: input, // Use the raw input from the text field
       createdAt: new Date(),
     };
-    setMessages((prev) => [...prev, newUserMessage]);
+
+    setMessages((prev) => [...prev, newUserMessage]); // Optimistically update UI
     setInput("");
     setIsLoading(true);
 
     try {
       const result = await sendMessage(
-        newUserMessage.content,
-        chatHistoryEnabled ? messages : undefined // Send the current `messages` state
+        newUserMessage.content, // Pass the actual current user input string
+        historyForSendMessage // Pass the history *before* this new user message
       );
       
       let botResponseContent: string;
@@ -98,28 +101,35 @@ export function ChatInterface({
       }
       
       if (chatHistoryEnabled && updatedHistoryFromAI) {
-        // If AI provides full history, use it. This is preferred for consistency.
+        // If AI provides full history, use it. This replaces the optimistic UI update
+        // with the confirmed history including the new user message and bot response.
         setMessages(updatedHistoryFromAI);
       } else {
-         // Otherwise, just append the new bot message.
+         // Otherwise, just append the new bot message to the current (optimistically updated) state.
         const newBotMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
           content: botResponseContent,
           createdAt: new Date(),
         };
+        // This path might be taken if sendMessage doesn't return a history array
+        // or if chatHistoryEnabled is false.
         setMessages((prev) => [...prev, newBotMessage]);
       }
       
     } catch (error) {
       console.error("Error sending message:", error);
+      // If an error occurs, we might still want to keep the user's message in the UI.
+      // The current setMessages(updatedHistoryFromAI) or setMessages((prev) => [...prev, newBotMessage])
+      // approach means if result.history is not returned on error, the bot error message would append.
+      // It might be better to construct an error message and append it.
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: "Sorry, I encountered an error. Please try again.",
         createdAt: new Date(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]); // Append error to optimistically updated messages
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
@@ -138,7 +148,7 @@ export function ChatInterface({
   const handleDeleteSingleMessageInternal = (messageId: string) => {
     setMessages((prevMessages) => prevMessages.filter(msg => msg.id !== messageId));
     if (onDeleteSingleMessage) {
-      onDeleteSingleMessage(messageId); // Notify parent if it needs to do something
+      onDeleteSingleMessage(messageId); 
     }
   };
 

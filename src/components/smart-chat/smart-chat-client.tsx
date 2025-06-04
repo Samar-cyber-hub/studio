@@ -18,54 +18,63 @@ export function SmartChatClient() {
   const [currentInitialMessages, setCurrentInitialMessages] = useState<Message[]>([initialBotMessage]);
 
   useEffect(() => {
-    // This ensures ChatInterface is re-initialized with the correct initial messages
-    // if they are reset (e.g. after a clear chat operation).
-    // No action needed here if initialBotMessage is static, but if it could change,
-    // this effect would re-set currentInitialMessages.
-  }, [initialBotMessage]); // Dependency array ensures this runs if initialBotMessage definition changes.
+    // This effect ensures that if `initialBotMessage` were dynamic and changed,
+    // `currentInitialMessages` would update. For a static `initialBotMessage`,
+    // it primarily runs on mount.
+  }, [initialBotMessage]);
 
 
   const getFormattedHistoryForAI = (currentMessages: Message[]): string => {
+    // Filter out the very first initial bot message if it's the only one,
+    // or if it's present along with other messages (to avoid sending it as history if it was just cleared)
     const relevantMessages = currentMessages.filter(msg => msg.id !== initialBotMessage.id || currentMessages.length > 1);
     return relevantMessages
       .map((msg) => `${msg.role === "user" ? "User" : "AI"}: ${msg.content}`)
-      .join("\\n");
+      .join("\\n"); // Use a literal newline character for the AI flow
   };
   
-  const handleSendMessage = async (userInput: string, currentMessagesFromChatInterface?: Message[]) => {
-    const historyForAIInput = currentMessagesFromChatInterface 
-        ? currentMessagesFromChatInterface.slice(0, -1) 
-        : []; 
-
-    const currentHistoryString = getFormattedHistoryForAI(historyForAIInput);
+  // userInput is the string content of the user's current message.
+  // historyBeforeCurrentUser is an array of Message objects representing the chat history *before* the current userInput.
+  const handleSendMessage = async (userInput: string, historyBeforeCurrentUser?: Message[]) => {
+    const actualHistoryForAI = historyBeforeCurrentUser || [];
+    const currentHistoryString = getFormattedHistoryForAI(actualHistoryForAI);
 
     try {
-      const input: SmartChatInput = { 
-        userInput, 
+      const inputForAI: SmartChatInput = { 
+        userInput: userInput, // The current user's direct input string
         chatHistory: currentHistoryString 
       };
-      const output = await smartChat(input);
+      const output = await smartChat(inputForAI);
       
-      const userMessageForHistory: Message = currentMessagesFromChatInterface && currentMessagesFromChatInterface.length > 0
-        ? currentMessagesFromChatInterface[currentMessagesFromChatInterface.length - 1] 
-        : { id: Date.now().toString() + "-user-fallback", role: "user", content: userInput, createdAt: new Date()};
+      // Construct the Message object for the current user's input for display
+      const currentUserMessageForDisplay: Message = {
+        // This ID is created client-side in ChatInterface for optimistic update.
+        // To maintain consistency, we re-create it here for the history array.
+        // A more robust solution might involve passing the optimistic message's ID.
+        // For now, generating a new one is fine as React handles key changes.
+        id: Date.now().toString() + "-user", 
+        role: "user",
+        content: userInput, // Use the original userInput string
+        createdAt: new Date()
+      };
       
-      const botMessageForHistory: Message = {
+      const botMessageForDisplay: Message = {
         id: Date.now().toString() + "-bot",
         role: "assistant",
         content: output.chatbotResponse,
         createdAt: new Date(),
       };
       
+      // This is the full history array that ChatInterface will use to re-render.
       const newFullHistoryArray: Message[] = [
-        ...historyForAIInput,
-        userMessageForHistory,
-        botMessageForHistory
+        ...actualHistoryForAI,        // History before current user's message
+        currentUserMessageForDisplay, // Current user's message
+        botMessageForDisplay          // Bot's response
       ];
 
       return { 
-        response: output.chatbotResponse,
-        history: newFullHistoryArray
+        response: output.chatbotResponse, // This is for ChatInterface if it doesn't use history
+        history: newFullHistoryArray     // This is the complete history for ChatInterface to set
       };
 
     } catch (error) {
@@ -76,10 +85,12 @@ export function SmartChatClient() {
         variant: "destructive",
       });
       
-      const userMessageForHistoryOnError: Message = currentMessagesFromChatInterface && currentMessagesFromChatInterface.length > 0
-        ? currentMessagesFromChatInterface[currentMessagesFromChatInterface.length - 1]
-        : { id: Date.now().toString() + "-user-fallback-err", role: "user", content: userInput, createdAt: new Date()};
-
+      const currentUserMessageForDisplayOnError: Message = {
+        id: Date.now().toString() + "-user-err",
+        role: "user",
+        content: userInput, // Original user input
+        createdAt: new Date(),
+      };
        const errorBotMessage: Message = {
         id: Date.now().toString() + "-bot-error",
         role: "assistant",
@@ -87,8 +98,8 @@ export function SmartChatClient() {
         createdAt: new Date(),
       };
        const historyOnError: Message[] = [
-        ...historyForAIInput,
-        userMessageForHistoryOnError,
+        ...actualHistoryForAI,
+        currentUserMessageForDisplayOnError,
         errorBotMessage,
       ];
       return { 
@@ -125,7 +136,7 @@ export function SmartChatClient() {
       chatHistoryEnabled={true} 
       onClearChat={handleChatClear}
       onSaveChatMessage={handleSaveChatMessage}
-      onViewSavedChats={handleViewSavedChats} // Pass the new handler
+      onViewSavedChats={handleViewSavedChats} 
     />
   );
 }
