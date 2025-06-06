@@ -27,7 +27,6 @@ import {
   Palette,
   KeyRound,
   Film, 
-  Link2, 
   ClipboardList,
   Camera, 
 } from "lucide-react";
@@ -40,7 +39,6 @@ const navItems = [
   { href: "/logo-generation", label: "Logo Generation", icon: Palette },
   { href: "/animation-generation", label: "Animation Concepts", icon: Film },
   { href: "/code-generation", label: "Code Generation", icon: CodeXml },
-  { href: "/url-shortener", label: "URL Shortener 🔗", icon: Link2 },
   { href: "/test-paper-generation", label: "Test Time 💥👨‍🏫", icon: ClipboardList },
   { href: "/photo-question", label: "Photo Question 📷❓", icon: Camera },
   { href: "/social-media-optimization", label: "Social Media Tools", icon: Share2 },
