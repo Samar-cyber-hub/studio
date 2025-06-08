@@ -14,6 +14,7 @@ import { generateImage, type GenerateImageInput, type GenerateImageOutput } from
 import { toast } from "@/hooks/use-toast";
 import { Loader2, AlertTriangle, Sparkles, Download } from "lucide-react";
 import NextImage from "next/image"; // Renamed to avoid conflict with Lucide's Image icon
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   prompt: z.string().min(10, { message: "Prompt must be at least 10 characters." })
@@ -68,13 +69,13 @@ export function ImageGenerationClient() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-slate-800 text-slate-100 border-slate-700 shadow-xl">
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center text-slate-50">
             <Sparkles className="mr-2 h-6 w-6 text-primary" />
             Describe Your Vision
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-slate-300">
             Enter a detailed prompt for the image you want to generate. Be specific about style (e.g., realistic, anime, 3D model), content, colors, and mood.
           </CardDescription>
         </CardHeader>
@@ -86,13 +87,13 @@ export function ImageGenerationClient() {
                 name="prompt"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Image Prompt</FormLabel>
+                    <FormLabel className="text-slate-200">Image Prompt</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="e.g., 'A majestic lion wearing a crown, sitting on a throne in a mystical forest, fantasy art style, vibrant colors'"
                         rows={4}
                         {...field}
-                        className="min-h-[100px] resize-y"
+                        className="min-h-[100px] resize-y bg-slate-700 border-slate-600 text-slate-50 placeholder:text-slate-400 focus:border-primary focus:ring-primary"
                       />
                     </FormControl>
                     <FormMessage />
@@ -111,31 +112,31 @@ export function ImageGenerationClient() {
       </Card>
 
       {isLoading && (
-        <Card className="flex flex-col items-center justify-center p-10 min-h-[300px]">
+        <Card className="bg-slate-800 text-slate-100 border-slate-700 shadow-xl flex flex-col items-center justify-center p-10 min-h-[300px]">
           <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-          <p className="text-lg text-muted-foreground">Generating your image...</p>
-          <p className="text-sm text-muted-foreground">This might take a few moments.</p>
+          <p className="text-lg text-slate-300">Generating your image...</p>
+          <p className="text-sm text-slate-400">This might take a few moments.</p>
         </Card>
       )}
 
       {generatedImage && !isLoading && (
-        <Card>
+        <Card className="bg-slate-800 text-slate-100 border-slate-700 shadow-xl">
           <CardHeader>
-            <CardTitle>Generated Result</CardTitle>
+            <CardTitle className="text-slate-50">Generated Result</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center">
             {generatedImage.imageDataUri && (
               <div className="w-full max-w-lg mb-4">
-                <div className="relative aspect-[1/1] rounded-lg overflow-hidden border shadow-lg bg-muted">
+                <div className="relative aspect-[1/1] rounded-lg overflow-hidden border border-slate-600 shadow-lg bg-slate-700">
                   <NextImage
                     src={generatedImage.imageDataUri}
                     alt="Generated AI Image"
                     layout="fill"
-                    objectFit="contain" // 'cover' might crop, 'contain' ensures visibility
+                    objectFit="contain" 
                     data-ai-hint="generated art"
                   />
                 </div>
-                <Button asChild variant="outline" className="mt-4 w-full">
+                <Button asChild variant="outline" className="mt-4 w-full bg-slate-700 hover:bg-slate-600 text-slate-100 border-slate-500 hover:border-slate-400">
                   <a 
                     href={generatedImage.imageDataUri} 
                     download={`ai-generated-image-${Date.now()}.png`}
@@ -148,10 +149,10 @@ export function ImageGenerationClient() {
               </div>
             )}
             {generatedImage.errorMessage && (
-              <Alert variant="destructive" className="w-full">
+              <Alert variant="destructive" className="w-full bg-red-900/30 border-red-700 text-red-100 [&>svg]:text-red-300">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Generation Failed</AlertTitle>
-                <AlertDescription>{generatedImage.errorMessage}</AlertDescription>
+                <AlertTitle className="text-red-50">Generation Failed</AlertTitle>
+                <AlertDescription className="text-red-200">{generatedImage.errorMessage}</AlertDescription>
               </Alert>
             )}
           </CardContent>
