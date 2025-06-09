@@ -57,9 +57,7 @@ Preferred Question Types: {{#each questionTypes}}{{{this}}}{{#unless @last}}, {{
 Question Types: Please include a variety of question types appropriate for the subject and grade level (e.g., Multiple Choice Questions (MCQs), True/False, Fill-in-the-blanks, Short Answer Questions, Long Answer Questions, Problem-solving).
 {{/if}}
 {{#if difficulty}}
-{{#unless (eq difficulty "AI_Decides")}}
 Desired Difficulty Level: {{{difficulty}}}
-{{/unless}}
 {{/if}}
 {{#if includePYQs}}
 Instruction: Where appropriate, please try to include questions that are in the style of, or representative of, previous year examination questions (PYQs) for this topic and class level.
@@ -131,3 +129,4 @@ const generateTestPaperFlow = ai.defineFlow(
     return output;
   }
 );
+
