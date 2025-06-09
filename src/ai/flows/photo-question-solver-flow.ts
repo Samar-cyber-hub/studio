@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Solves questions from images, suggests similar ones, and explains humorously.
@@ -10,7 +11,8 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const SolveQuestionFromImageInputSchema = z.object({
+// Internal Zod schema, not exported directly
+const SolveQuestionFromImageInputSchemaInternal = z.object({
   imageDataUri: z.string().describe(
     "A data URI of the image containing the question. Format: 'data:image/jpeg;base64,...' or 'data:image/png;base64,...'."
   ),
@@ -18,15 +20,18 @@ export const SolveQuestionFromImageInputSchema = z.object({
     "Optional user instructions for the tone or style of the explanation (e.g., 'explain it like I'm 5', 'make it super sarcastic'). Defaults to generally simple and humorous."
   ),
 });
-export type SolveQuestionFromImageInput = z.infer<typeof SolveQuestionFromImageInputSchema>;
+// Exported TypeScript type
+export type SolveQuestionFromImageInput = z.infer<typeof SolveQuestionFromImageInputSchemaInternal>;
 
-export const SolveQuestionFromImageOutputSchema = z.object({
+// Internal Zod schema, not exported directly
+const SolveQuestionFromImageOutputSchemaInternal = z.object({
   identifiedQuestion: z.string().describe("The question identified by the AI from the image. If no question is found, this will indicate that."),
   solvedSolution: z.string().describe("The step-by-step solution to the identified question. If no question is solvable, this will explain why."),
   similarQuestions: z.array(z.string()).optional().describe("An array of 2-3 similar questions to help practice the concept. May be empty if not applicable."),
   humorousExplanation: z.string().describe("A simple and humorous explanation of the original question and its solution. If no question is solvable, this might humorously address the input."),
 });
-export type SolveQuestionFromImageOutput = z.infer<typeof SolveQuestionFromImageOutputSchema>;
+// Exported TypeScript type
+export type SolveQuestionFromImageOutput = z.infer<typeof SolveQuestionFromImageOutputSchemaInternal>;
 
 export async function solveQuestionFromImage(input: SolveQuestionFromImageInput): Promise<SolveQuestionFromImageOutput> {
   return solveQuestionFromImageFlow(input);
@@ -35,8 +40,8 @@ export async function solveQuestionFromImage(input: SolveQuestionFromImageInput)
 const solveQuestionFromImageFlow = ai.defineFlow(
   {
     name: 'solveQuestionFromImageFlow',
-    inputSchema: SolveQuestionFromImageInputSchema,
-    outputSchema: SolveQuestionFromImageOutputSchema,
+    inputSchema: SolveQuestionFromImageInputSchemaInternal, // Use internal schema
+    outputSchema: SolveQuestionFromImageOutputSchemaInternal, // Use internal schema
   },
   async (input) => {
     const { output } = await ai.generate({
@@ -69,7 +74,7 @@ const solveQuestionFromImageFlow = ai.defineFlow(
         }`
         },
       ],
-      output: { schema: SolveQuestionFromImageOutputSchema },
+      output: { schema: SolveQuestionFromImageOutputSchemaInternal }, // Use internal schema
       config: {
         temperature: 0.5, // Keep it somewhat deterministic for solutions, but allow humor.
          safetySettings: [
@@ -86,3 +91,4 @@ const solveQuestionFromImageFlow = ai.defineFlow(
     return output;
   }
 );
+
